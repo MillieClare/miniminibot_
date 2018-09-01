@@ -45,7 +45,7 @@ function time(target, context, params) {
 }
 
 function hi(target, context, params) {
-    let responses = [`Heya ${context.username}, how are you today?`, `Hi ${context.username}, how has your day been?`, `Yo yo yo ${context.username}, how's it hangin'?`];
+    let responses = [`Heya ${context.username}, how are you today?`, `Hi ${context.username}, how has your day been?`, `Yo yo yo ${context.username}, how's it hangin'?`, `Oh, ${context.username}... it's you... `, `Eyyy, ${context.username}... How you doin'?` ];
     
     let responseNumber = Math.floor(Math.random() * responses.length);
     client.say("Milliebug_", responses[responseNumber]);

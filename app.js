@@ -18,7 +18,7 @@ const options = {
 
 };
 
-let knownCommands = { twitter, commands, so, time, sub, follow, hype, lurk, discord, hi, uptime };
+let knownCommands = { twitter, commands, so, time, sub, follow, hype, lurk, discord, hi, uptime, howareyou };
 let commandPrefix = '!';
 
 const client = new tmi.client(options);
@@ -47,6 +47,12 @@ function time(target, context, params) {
 function hi(target, context, params) {
     let responses = [`Heya ${context.username}, how are you today?`, `Hi ${context.username}, how has your day been?`, `Yo yo yo ${context.username}, how's it hangin'?`, `Oh, ${context.username}... it's you... `, `Eyyy, ${context.username}... How you doin'?` ];
     
+    let responseNumber = Math.floor(Math.random() * responses.length);
+    client.say("Milliebug_", responses[responseNumber]);
+}
+
+function howareyou(target, context, params) {
+    let responses = [`I'm great, thank you so much for asking ${context.username}!`, `The usual, @Milliebug_ is SOOOO demanding... you know what she's like...`, `I'm just happy it's a stream day, you know what I mean?`, `Well now that you're here ${context.username}, I'm obviously fantastical!`];
     let responseNumber = Math.floor(Math.random() * responses.length);
     client.say("Milliebug_", responses[responseNumber]);
 }

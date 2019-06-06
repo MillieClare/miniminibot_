@@ -18,7 +18,7 @@ const options = {
 
 };
 
-let knownCommands = { twitter, commands, so, time, sub, follow, hype, lurk, discord, hi, uptime, howareyou };
+let knownCommands = { twitter, commands, so, time, sub, follow, hype, lurk, discord, hi, uptime, howareyou, raid, focus, pb, zootr };
 let commandPrefix = '!';
 
 const client = new tmi.client(options);
@@ -28,6 +28,22 @@ client.connect();
 
 function twitter(target, context, params) {
     client.say("Milliebug_", "You can follow Millie on Twitter www.twitter.com/_Milliebug_ !");
+}
+
+function raid(target, context, params) {
+    client.say("Milliebug_", "Sub message: millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype Non-sub message:PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
+}
+
+function focus(target, context, params) {
+    client.say("Milliebug_", "Millie isn't very good at multi-tasking! She will definitely reply to your message once things cool down in-game!");
+}
+
+function pb(target, context, params) {
+    client.say("Milliebug_", "Millie's best time is currently 3 hours, 45 minutes and 18 seconds!");
+}
+
+function zootr(target, context, params) {
+    client.say("Milliebug_", "In this version of Zelda, all of the items have been randomly shuffled for a more dynamic player experience.");
 }
 
 function commands(target, context, params) {

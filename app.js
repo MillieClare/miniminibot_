@@ -12,7 +12,7 @@ const options = {
     },
     identity: {
         username: "miniminibot_",
-        password: "oauth:0l1ddwius541pn3vjcorz2rwiwdk0s"
+        password: "***********************"
     },
     channels: ["Milliebug_"]
 

@@ -1,6 +1,9 @@
 // Based heavily off https://dev.twitch.tv/docs/irc/
 
+const fs = require("fs");
+const path = require("path");
 const tmi = require('tmi.js');
+const player = require('play-sound')();
 
 const options = {
     options: {
@@ -12,19 +15,79 @@ const options = {
     },
     identity: {
         username: "miniminibot_",
-        password: "***********************"
+        password: "oauth:0l1ddwius541pn3vjcorz2rwiwdk0s"
     },
     channels: ["Milliebug_"]
 
 };
+//these are the sound variables
+let soundspath = path.join(__dirname,"sounds"); //the base location for all sounds
+let soundcooldown = new Date(); //set cooldown to date type
+let soundcooldownseconds = 30; //this is the default cooldown time can be ajusted to users needs
 
-let knownCommands = { twitter, commands, so, time, sub, follow, hype, lurk, discord, hi, uptime, howareyou, raid, focus, pb, zootr };
+let knownCommands = {
+    twitter,
+    commands,
+    so,
+    time,
+    sub,
+    follow,
+    hype,
+    lurk,
+    discord,
+    hi,
+    uptime,
+    howareyou,
+    raid,
+    focus,
+    pb,
+    zootr,
+    fanfare,
+};
+
 let commandPrefix = '!';
 
 const client = new tmi.client(options);
 client.connect();
 
 
+function soundsCoolDownCheck() {
+    /// <summary> Checks whether the cooldown for sounds has expired, this will stop sound spam. </summary>
+    /// <returns type="Bool"> On cooldown or not </returns>
+    let currentTime = new Date();
+    if (currentTime.getTime() < soundcooldown.getTime()) {
+        console.log("sounds are currently on cooldown");
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+function fanfare(target, context, params) {
+    //first check whether sounds are off cooldown
+    if (!soundsCoolDownCheck()) { return; }
+    //Get folder location of farfare files
+    var fanfarepath = path.join(soundspath, "fanfare");
+    //list all mp3s in this array
+    let fanfarearray = [
+        "ffviifanfare.mp3",
+        "JiggyFanfare.mp3",
+    ];
+    //generate random key from array length
+    let fanfarekey = Math.floor(Math.random() * fanfarearray.length);;
+    //add file to the folder path
+    var filepath = path.join(fanfarepath, fanfarearray[fanfarekey]);
+    //display what file is being requested
+    console.log("Playing: " + fanfarearray[fanfarekey]);
+    //play file using install cmd mp3 player, throw error if one can not be found
+    player.play(filepath, (err) => {
+        if (err) console.log('error ' + err);
+    });
+    //set new cooldown time
+    soundcooldown = new Date();
+    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
+}
 
 function twitter(target, context, params) {
     client.say("Milliebug_", "You can follow Millie on Twitter www.twitter.com/_Milliebug_ !");

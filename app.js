@@ -96,7 +96,7 @@ function twitter(target, context, params) {
 }
 
 function raid(target, context, params) {
-    client.say(channelName, "Sub message: millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype Non-sub message:PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
+    client.say(channelName, "Sub message:\nmillie4Hype millie4Hype MINI RAID millie4Hype millie4Hype\nNon-sub message:\nPurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
 }
 
 function focus(target, context, params) {
@@ -132,14 +132,25 @@ function time(target, context, params) {
 }
 
 function hi(target, context, params) {
-    let responses = [`Heya ${context.username}, how are you today?`, `Hi ${context.username}, how has your day been?`, `Yo yo yo ${context.username}, how's it hangin'?`, `Oh, ${context.username}... it's you... `, `Eyyy, ${context.username}... How you doin'?` ];
+    let responses = [
+        `Heya ${context.username}, how are you today?`,
+        `Hi ${context.username}, how has your day been?`,
+        `Yo yo yo ${context.username}, how's it hangin'?`,
+        `Oh, ${context.username}... it's you... `,
+        `Eyyy, ${context.username}... How you doin'?`,
+    ];
     
     let responseNumber = Math.floor(Math.random() * responses.length);
     client.say(channelName, responses[responseNumber]);
 }
 
 function howareyou(target, context, params) {
-    let responses = [`I'm great, thank you so much for asking ${context.username}!`, `The usual, @${channelName} is SOOOO demanding... you know what she's like...`, `I'm just happy it's a stream day, you know what I mean?`, `Well now that you're here ${context.username}, I'm obviously fantastical!`];
+    let responses = [
+        `I'm great, thank you so much for asking ${context.username}!`,
+        `The usual, @${channelName} is SOOOO demanding... you know what she's like...`,
+        `I'm just happy it's a stream day, you know what I mean?`,
+        `Well now that you're here ${context.username}, I'm obviously fantastical!`,
+    ];
     let responseNumber = Math.floor(Math.random() * responses.length);
     client.say(channelName, responses[responseNumber]);
 }

@@ -5,6 +5,8 @@ const path = require("path");
 const tmi = require('tmi.js');
 const player = require('play-sound')();
 
+const channelName = "Milliebug_";
+
 const options = {
     options: {
         debug: true
@@ -17,7 +19,7 @@ const options = {
         username: "miniminibot_",
         password: "oauth:0l1ddwius541pn3vjcorz2rwiwdk0s"
     },
-    channels: ["Milliebug_"]
+    channels: [channelName]
 
 };
 //these are the sound variables
@@ -90,31 +92,31 @@ function fanfare(target, context, params) {
 }
 
 function twitter(target, context, params) {
-    client.say("Milliebug_", "You can follow Millie on Twitter www.twitter.com/_Milliebug_ !");
+    client.say(channelName, "You can follow Millie on Twitter www.twitter.com/_Milliebug_ !");
 }
 
 function raid(target, context, params) {
-    client.say("Milliebug_", "Sub message: millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype Non-sub message:PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
+    client.say(channelName, "Sub message: millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype Non-sub message:PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
 }
 
 function focus(target, context, params) {
-    client.say("Milliebug_", "Millie isn't very good at multi-tasking! She will definitely reply to your message once things cool down in-game!");
+    client.say(channelName, "Millie isn't very good at multi-tasking! She will definitely reply to your message once things cool down in-game!");
 }
 
 function pb(target, context, params) {
-    client.say("Milliebug_", "Millie's best time is currently 3 hours, 45 minutes and 18 seconds!");
+    client.say(channelName, "Millie's best time is currently 3 hours, 45 minutes and 18 seconds!");
 }
 
 function zootr(target, context, params) {
-    client.say("Milliebug_", "In this version of Zelda, all of the items have been randomly shuffled for a more dynamic player experience.");
+    client.say(channelName, "In this version of Zelda, all of the items have been randomly shuffled for a more dynamic player experience.");
 }
 
 function commands(target, context, params) {
-    client.say("Milliebug_", "Current commands can be found here: https://bit.ly/2BZSGAM");
+    client.say(channelName, "Current commands can be found here: https://bit.ly/2BZSGAM");
 }
 
 function so(target, context, params) {
-    client.say("Milliebug_", `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love!`);
+    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love!`);
 }
 
 function time(target, context, params) {
@@ -125,7 +127,7 @@ function time(target, context, params) {
     if (hour < 10) { hour = `0${hour}`; }
     if (min < 10) { min = `0${min}`; }
     if (sec < 10) { sec = `0${sec}`; }
-    client.say("Milliebug_", `Millie's timezone is BST, the current time is ${hour}:${min}:${sec}`);
+    client.say(channelName, `Millie's timezone is BST, the current time is ${hour}:${min}:${sec}`);
 
 }
 
@@ -133,33 +135,33 @@ function hi(target, context, params) {
     let responses = [`Heya ${context.username}, how are you today?`, `Hi ${context.username}, how has your day been?`, `Yo yo yo ${context.username}, how's it hangin'?`, `Oh, ${context.username}... it's you... `, `Eyyy, ${context.username}... How you doin'?` ];
     
     let responseNumber = Math.floor(Math.random() * responses.length);
-    client.say("Milliebug_", responses[responseNumber]);
+    client.say(channelName, responses[responseNumber]);
 }
 
 function howareyou(target, context, params) {
-    let responses = [`I'm great, thank you so much for asking ${context.username}!`, `The usual, @Milliebug_ is SOOOO demanding... you know what she's like...`, `I'm just happy it's a stream day, you know what I mean?`, `Well now that you're here ${context.username}, I'm obviously fantastical!`];
+    let responses = [`I'm great, thank you so much for asking ${context.username}!`, `The usual, @${channelName} is SOOOO demanding... you know what she's like...`, `I'm just happy it's a stream day, you know what I mean?`, `Well now that you're here ${context.username}, I'm obviously fantastical!`];
     let responseNumber = Math.floor(Math.random() * responses.length);
-    client.say("Milliebug_", responses[responseNumber]);
+    client.say(channelName, responses[responseNumber]);
 }
 
 function sub(target, context, params) {
-    client.say("Milliebug_", "Enjoying the stream? Want your own song? Click here -> twitch.tv/products/milliebug_ or use Twitch Prime to sub for free!");
+    client.say(channelName, "Enjoying the stream? Want your own song? Click here -> twitch.tv/products/milliebug_ or use Twitch Prime to sub for free!");
 }
 
 function follow(target, context, params) {
-    client.say("Milliebug_", "Smash that follow button for a cookie <3");
+    client.say(channelName, "Smash that follow button for a cookie <3");
 }
 
 function hype(target, context, params) {
-    client.say("Milliebug_", "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
+    client.say(channelName, "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
 }
 
 function lurk(target, context, params) {
-    client.say("Milliebug_", "Lurk mode activated! Remember that when you mute a stream you do not count as a viewer! Please mute the tab or window instead - you rock!");
+    client.say(channelName, "Lurk mode activated! Remember that when you mute a stream you do not count as a viewer! Please mute the tab or window instead - you rock!");
 }
 
 function discord(target, context, params) {
-    client.say("Milliebug_", "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
+    client.say(channelName, "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
 }
 
 
@@ -189,7 +191,7 @@ function uptime(target, context, params) {
         hoursWord = 'hour';
     }
 
-    client.say("Milliebug_", `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
+    client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
 
 
 }

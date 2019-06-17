@@ -119,7 +119,13 @@ function so(target, context, params) {
 
 function time(target, context, params) {
     let d = new Date();
-    client.say("Milliebug_", `Millie's timezone is BST, the current time is ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`);
+    let hour = d.getHours();
+    let min = d.getMinutes();
+    let sec = d.getSeconds();
+    if (hour < 10) { hour = `0${hour}`; }
+    if (min < 10) { min = `0${min}`; }
+    if (sec < 10) { sec = `0${sec}`; }
+    client.say("Milliebug_", `Millie's timezone is BST, the current time is ${hour}:${min}:${sec}`);
 
 }
 

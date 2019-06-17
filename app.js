@@ -5,8 +5,11 @@ const path = require("path");
 const tmi = require('tmi.js');
 const player = require('play-sound')();
 
-const channelName = "Milliebug_";
+//moved bot information to external text file
+const botinfopath = path.join(__dirname, "botinfo");
+const channelName = getBotCreds("ChannelName");
 
+//this should help with keeping information secure
 const options = {
     options: {
         debug: true
@@ -16,16 +19,19 @@ const options = {
         reconnect: true
     },
     identity: {
-        username: "miniminibot_",
-        password: "oauth:0l1ddwius541pn3vjcorz2rwiwdk0s"
+        username: getBotCreds("UserName"),
+        password: getBotCreds("Password"),
     },
     channels: [channelName]
 
 };
 //these are the sound variables
-let soundspath = path.join(__dirname,"sounds"); //the base location for all sounds
+const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
+const soundcooldownseconds = 30; //this is the default cooldown time can be ajusted to users needs
 let soundcooldown = new Date(); //set cooldown to date type
-let soundcooldownseconds = 30; //this is the default cooldown time can be ajusted to users needs
+
+
+
 
 let knownCommands = {
     twitter,
@@ -52,6 +58,21 @@ let commandPrefix = '!';
 const client = new tmi.client(options);
 client.connect();
 
+//function for retrieveing information from the botinfo text file
+function getBotCreds(fieldName) {
+    let filename = path.join(botinfopath, "creds", "botinfo.txt");
+    if (!fs.existsSync(filename)) {
+        console.log("Could not find bot infomation text file")
+        return;
+    }
+    let data = fs.readFileSync(filename, "utf8").split("\n");
+    for (let i = 0; i < data.length; i++) {
+        let fieldData = data[i].split("=");
+        if (fieldData[0] === fieldName) {
+            return fieldData[1];
+        }
+    }
+}
 
 function soundsCoolDownCheck() {
     /// <summary> Checks whether the cooldown for sounds has expired, this will stop sound spam. </summary>

@@ -51,6 +51,8 @@ let knownCommands = {
     pb,
     zootr,
     fanfare,
+    quotes,
+    newquote,
 };
 
 let commandPrefix = '!';
@@ -91,7 +93,7 @@ function fanfare(target, context, params) {
     //first check whether sounds are off cooldown
     if (!soundsCoolDownCheck()) { return; }
     //Get folder location of farfare files
-    var fanfarepath = path.join(soundspath, "fanfare");
+    let fanfarepath = path.join(soundspath, "fanfare");
     //list all mp3s in this array
     let fanfarearray = [
         "ffviifanfare.mp3",
@@ -174,6 +176,36 @@ function howareyou(target, context, params) {
     let responseNumber = Math.floor(Math.random() * responses.length);
     let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
     client.say(channelName, response);
+}
+
+function quotes(target, context, params) {
+    let filename = path.join(botinfopath, "quotes", "quotes.txt");
+    if (!fs.existsSync(filename)) {
+        console.log("Could not find Quotes text file")
+        return;
+    }
+    let quotes = fs.readFileSync(filename, "utf8").split("\n");
+    if (quotes.length <= 1) {
+        console.log("There are no quotes to load");
+        return;
+    }
+    quotes.pop(quotes.length);
+    let quoteNumber = Math.floor(Math.random() * quotes.length);
+    client.say(channelName, quotes[quoteNumber]);
+}
+
+function newquote(target, context, params) {
+    let filename = path.join(botinfopath, "quotes", "quotes.txt");
+    let quote = "";
+    for (let i = 0; i < params.length; i++) {
+        quote += (params[i] + ' ');
+    }
+    quote = quote.slice(0, -1);
+    quote += '\n';
+    fs.appendFile(filename, quote, function (err) {
+        if (err) throw err;
+        console.log("Quote saved");
+    });
 }
 
 function sub(target, context, params) {

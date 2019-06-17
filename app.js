@@ -153,27 +153,27 @@ function time(target, context, params) {
 }
 
 function hi(target, context, params) {
-    let responses = [
-        `Heya ${context.username}, how are you today?`,
-        `Hi ${context.username}, how has your day been?`,
-        `Yo yo yo ${context.username}, how's it hangin'?`,
-        `Oh, ${context.username}... it's you... `,
-        `Eyyy, ${context.username}... How you doin'?`,
-    ];
-    
+    let filename = path.join(botinfopath, "responses", "hi.txt");
+    if (!fs.existsSync(filename)) {
+        console.log("Could not find Hi responses text file")
+        return;
+    }
+    let responses = fs.readFileSync(filename, "utf8").split("\n");
     let responseNumber = Math.floor(Math.random() * responses.length);
-    client.say(channelName, responses[responseNumber]);
+    let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
+    client.say(channelName, response);
 }
 
 function howareyou(target, context, params) {
-    let responses = [
-        `I'm great, thank you so much for asking ${context.username}!`,
-        `The usual, @${channelName} is SOOOO demanding... you know what she's like...`,
-        `I'm just happy it's a stream day, you know what I mean?`,
-        `Well now that you're here ${context.username}, I'm obviously fantastical!`,
-    ];
+    let filename = path.join(botinfopath, "responses", "howareyou.txt");
+    if (!fs.existsSync(filename)) {
+        console.log("Could not find Howareyou responses text file")
+        return;
+    }
+    let responses = fs.readFileSync(filename, "utf8").split("\n");
     let responseNumber = Math.floor(Math.random() * responses.length);
-    client.say(channelName, responses[responseNumber]);
+    let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
+    client.say(channelName, response);
 }
 
 function sub(target, context, params) {

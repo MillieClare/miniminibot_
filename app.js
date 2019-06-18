@@ -31,7 +31,7 @@ function twitter(target, context, params) {
 }
 
 function raid(target, context, params) {
-    client.say("Milliebug_", "Sub message: millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype Non-sub message:PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
+    client.say("Milliebug_", "Sub message: millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype Non-sub message: PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
 }
 
 function focus(target, context, params) {
@@ -82,7 +82,7 @@ function follow(target, context, params) {
 }
 
 function hype(target, context, params) {
-    client.say("Milliebug_", "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
+    client.say("Milliebug_", "TwitchUnity millie4Hype MorphinTime millie4Hype KAPOW millie4Hype MorphinTime millie4Hype TwitchUnity millie4Hype TwitchUnity millie4Hype MorphinTime millie4Hype KAPOW millie4Hype MorphinTime millie4Hype TwitchUnity");
 }
 
 function lurk(target, context, params) {

@@ -1,0 +1,6 @@
+Heya #USERNAME#, how are you today?
+Hi #USERNAME, how has your day been?
+Yo yo yo #USERNAME, how's it hangin'?
+Oh, #USERNAME#... it's you...
+Eyyy, #USERNAME#... How you doin'?
+Hey up #USERNAME#, how's tha doin'?

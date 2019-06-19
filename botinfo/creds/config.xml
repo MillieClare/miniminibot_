@@ -10,8 +10,15 @@
     </connection>
   </settings>
   <bot>
-    <channelname>Milliebug_</channelname>
-    <username>miniminibot_</username>
-    <password>oauth:0l1ddwius541pn3vjcorz2rwiwdk0s</password>
+    <info>
+      <channelname>Milliebug_</channelname>
+      <username>miniminibot_</username>
+      <password>oauth:0l1ddwius541pn3vjcorz2rwiwdk0s</password>
+    </info>
+    <settings>
+      <subwelcome>false</subwelcome>
+      <commandperfix>!</commandperfix>
+      <soundcooldown>30</soundcooldown>
+    </settings>
   </bot>
 </config>

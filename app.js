@@ -4,18 +4,21 @@ const fs = require("fs");
 const path = require("path");
 const tmi = require('tmi.js');
 const xml2js = require('xml2js');
-const player = require('play-sound')();
+const player = require('play-sound')({player: "ffplay"}); //decided on ffplay as it is more realiable when playing mp3s
 
-var parser = new xml2js.Parser({ attrkey: "ATTR" });
+let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
 //moved bot information to external text file
 const botinfopath = path.join(__dirname, "botinfo");
-let channelName = "";
+let channelName = ""; //this variable can be set in the config xml file
 
 //these are the sound variables
 const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
-const soundcooldownseconds = 30; //this is the default cooldown time can be ajusted to users needs
+let soundcooldownseconds = 0; //this variable can be set in the config xml file
 let soundcooldown = new Date(); //set cooldown to date type
+
+let subwelcome = false; //this variable can be set in the config xml file
+let sublist = setUpSubList();
 
 let knownCommands = {
     twitter,
@@ -39,15 +42,13 @@ let knownCommands = {
     newquote,
 };
 
-let commandPrefix = '!';
+let commandPrefix = ""; //this variable can be set in the config xml file
 const client = new tmi.client(getConfigSettings());
 client.connect();
 
-//moved settings to xml file, new function should contruct options for tmi
-function getConfigSettings() {
-    let filename = path.join(botinfopath, "creds", "config.xml");
+function getXMLFileObject(filename) {
     if (!fs.existsSync(filename)) {
-        console.log("Could not find config xml file")
+        console.log("Could not find requested xml file")
         return;
     }
     let xmlstring = fs.readFileSync(filename, "utf8");
@@ -56,7 +57,27 @@ function getConfigSettings() {
         if (err) throw err;
         xmlfile = result;
     });
-    channelName = xmlfile["config"]["bot"][0]["channelname"][0];
+    return xmlfile;
+}
+
+function playSound(filename) {
+    player.play(filename, { ffplay: ["-nodisp"] }, (err) => {
+        if (err) console.log('error ' + err);
+    });
+}
+
+//moved settings to xml file, new function should contruct options for tmi
+function getConfigSettings() {
+    let filename = path.join(botinfopath, "creds", "config.xml");
+    let xmlfile = getXMLFileObject(filename);
+
+    //global settings
+    commandPrefix = xmlfile["config"]["bot"][0]["settings"][0]["commandperfix"][0];
+    soundcooldownseconds = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["soundcooldown"][0]) ? 0 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["soundcooldown"][0]));
+    subwelcome = (xmlfile["config"]["bot"][0]["settings"][0]["subwelcome"][0] === "true");
+    channelName = xmlfile["config"]["bot"][0]["info"][0]["channelname"][0];
+    //end of global settings
+
     let options = {
         options: {
             debug: (xmlfile["config"]["settings"][0]["options"][0]["debug"][0] === "true"),
@@ -66,12 +87,48 @@ function getConfigSettings() {
             reconnect: (xmlfile["config"]["settings"][0]["connection"][0]["reconnect"][0] === "true"),
         },
         identity: {
-            username: xmlfile["config"]["bot"][0]["username"][0],
-            password: xmlfile["config"]["bot"][0]["password"][0],
+            username: xmlfile["config"]["bot"][0]["info"][0]["username"][0],
+            password: xmlfile["config"]["bot"][0]["info"][0]["password"][0],
         },
         channels: [channelName]
     };
     return options;
+}
+
+function setUpSubList() {
+    let filename = path.join(botinfopath, "sublist.xml");
+    let xmlfile = getXMLFileObject(filename);
+
+    let subarray = xmlfile["subs"]["sub"]
+
+    let tmpList = [];
+    for (let i = 0; i < subarray.length; i++) {
+        let username = subarray[i]["username"][0];
+        tmpList[username] = {
+            welcomesong: subarray[i]["welcomesong"][0],
+            welcomed: false,
+        }
+    }
+    return tmpList;
+}
+
+function playSubWelcomeSong(context) {
+    let filepath = path.join(soundspath, "subwelcome");
+    //check if in sublist
+    if (context.username in sublist) {
+        if (sublist[context.username]["welcomed"]) { return; }
+        filepath = path.join(filepath,sublist[context.username]["welcomesong"]);
+        sublist[context.username]["welcomed"] = true;
+        playSound(filepath);
+        return;
+    }
+    //if not in sub list play default and add to sub list
+    filepath = path.join(filepath, "default.mp3");
+    sublist[context.username] = {
+        welcomesong: "default.mp3",
+        welcomed: true,
+    };
+    playSound(filepath);
 }
 
 function soundsCoolDownCheck() {
@@ -109,9 +166,7 @@ function fanfare(target, context, params) {
     //display what file is being requested
     console.log("Playing: " + fanfarearray[fanfarekey]);
     //play file using install cmd mp3 player, throw error if one can not be found
-    player.play(filepath, (err) => {
-        if (err) console.log('error ' + err);
-    });
+    playSound(filepath);
     //set new cooldown time
     soundcooldown = new Date();
     soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
@@ -275,6 +330,9 @@ function uptime(target, context, params) {
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
+    }
+    if (subwelcome && context.subscriber) {
+        playSubWelcomeSong(context);
     }
     if (msg.charAt(0) !== commandPrefix) {
         console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`);

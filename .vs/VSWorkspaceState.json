@@ -2,9 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\botinfo",
+    "\\botinfo\\creds",
     "\\sounds",
     "\\sounds\\fanfare"
   ],
-  "SelectedNode": "\\botinfo\\creds",
+  "SelectedNode": "\\botinfo\\sublist.xml",
   "PreviewInSolutionExplorer": false
 }

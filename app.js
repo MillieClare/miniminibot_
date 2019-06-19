@@ -119,7 +119,10 @@ function twitter(target, context, params) {
 }
 
 function raid(target, context, params) {
-    client.say(channelName, "Sub message:\nmillie4Hype millie4Hype MINI RAID millie4Hype millie4Hype\nNon-sub message:\nPurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
+    client.say(channelName, "Sub message:");
+    client.say(channelName, "millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype");
+    client.say(channelName, "Non-sub message:");
+    client.say(channelName, "PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
 }
 
 function focus(target, context, params) {

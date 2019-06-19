@@ -140,6 +140,10 @@ function commands(target, context, params) {
 }
 
 function so(target, context, params) {
+    if (params.length < 1) {
+        console.log("No channel name given")
+        return;
+    }
     client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love!`);
 }
 

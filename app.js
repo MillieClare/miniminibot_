@@ -3,35 +3,19 @@
 const fs = require("fs");
 const path = require("path");
 const tmi = require('tmi.js');
+const xml2js = require('xml2js');
 const player = require('play-sound')();
+
+var parser = new xml2js.Parser({ attrkey: "ATTR" });
 
 //moved bot information to external text file
 const botinfopath = path.join(__dirname, "botinfo");
-const channelName = getBotCreds("ChannelName");
+let channelName = "";
 
-//this should help with keeping information secure
-const options = {
-    options: {
-        debug: true
-    },
-    connection: {
-        cluster: "aws",
-        reconnect: true
-    },
-    identity: {
-        username: getBotCreds("UserName"),
-        password: getBotCreds("Password"),
-    },
-    channels: [channelName]
-
-};
 //these are the sound variables
 const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
 const soundcooldownseconds = 30; //this is the default cooldown time can be ajusted to users needs
 let soundcooldown = new Date(); //set cooldown to date type
-
-
-
 
 let knownCommands = {
     twitter,
@@ -56,24 +40,38 @@ let knownCommands = {
 };
 
 let commandPrefix = '!';
-
-const client = new tmi.client(options);
+const client = new tmi.client(getConfigSettings());
 client.connect();
 
-//function for retrieveing information from the botinfo text file
-function getBotCreds(fieldName) {
-    let filename = path.join(botinfopath, "creds", "botinfo.txt");
+//moved settings to xml file, new function should contruct options for tmi
+function getConfigSettings() {
+    let filename = path.join(botinfopath, "creds", "config.xml");
     if (!fs.existsSync(filename)) {
-        console.log("Could not find bot infomation text file")
+        console.log("Could not find config xml file")
         return;
     }
-    let data = fs.readFileSync(filename, "utf8").split("\n");
-    for (let i = 0; i < data.length; i++) {
-        let fieldData = data[i].split("=");
-        if (fieldData[0] === fieldName) {
-            return fieldData[1];
-        }
-    }
+    let xmlstring = fs.readFileSync(filename, "utf8");
+    let xmlfile;
+    parser.parseString(xmlstring, function (err, result) {
+        if (err) throw err;
+        xmlfile = result;
+    });
+    channelName = xmlfile["config"]["bot"][0]["channelname"][0];
+    let options = {
+        options: {
+            debug: (xmlfile["config"]["settings"][0]["options"][0]["debug"][0] === "true"),
+        },
+        connection: {
+            cluster: xmlfile["config"]["settings"][0]["connection"][0]["cluster"][0],
+            reconnect: (xmlfile["config"]["settings"][0]["connection"][0]["reconnect"][0] === "true"),
+        },
+        identity: {
+            username: xmlfile["config"]["bot"][0]["username"][0],
+            password: xmlfile["config"]["bot"][0]["password"][0],
+        },
+        channels: [channelName]
+    };
+    return options;
 }
 
 function soundsCoolDownCheck() {

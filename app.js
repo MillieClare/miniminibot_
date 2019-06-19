@@ -96,6 +96,11 @@ function fanfare(target, context, params) {
     let fanfarearray = [
         "ffviifanfare.mp3",
         "JiggyFanfare.mp3",
+        "grandia2fanfare.mp3",
+        "grandiafanfare.mp3",
+        "soinc12fanfare.mp3",
+        "sonic3fanfare.mp3",
+        "sonickfanfare.mp3",
     ];
     //generate random key from array length
     let fanfarekey = Math.floor(Math.random() * fanfarearray.length);;

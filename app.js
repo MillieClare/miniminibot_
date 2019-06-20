@@ -22,8 +22,8 @@ let sublist = setUpSubList();
 
 let giveawayentrylist = [];
 let giveawayopen = false;
-let giveawaysubenteries = 0;
-let giveawaydefaultenteries = 0;
+let giveawaysubenteries = 0; //this variable can be set in the config xml file
+let giveawaydefaultenteries = 0; //this variable can be set in the config xml file
 
 let knownCommands = {
     twitter,
@@ -255,7 +255,7 @@ function focus(target, context, params) {
 }
 
 function pb(target, context, params) {
-    client.say(channelName, "Millie's best time is currently 3 hours, 45 minutes and 18 seconds!");
+    client.say(channelName, "Millie's best time in zootr is currently 3 hours, 45 minutes and 18 seconds!");
 }
 
 function zootr(target, context, params) {
@@ -271,7 +271,7 @@ function so(target, context, params) {
         console.log("No channel name given")
         return;
     }
-    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love!`);
+    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love! millie4Cute`);
 }
 
 function time(target, context, params) {
@@ -371,24 +371,11 @@ function uptime(target, context, params) {
     let minutes = Math.floor(timeDifference / (1000 * 60)) % 60;
     let seconds = Math.floor(timeDifference / 1000) % 60;
 
-    let hoursWord = 'hours';
-    let minutesWord = 'minutes';
-    let secondsWord = 'seconds';
-
-    if (seconds === 1) {
-        secondsWord = 'second';
-    }
-
-    if (minutes === 1) {
-        minutesWord = 'minute';
-    }
-
-    if (hours === 1) {
-        hoursWord = 'hour';
-    }
+    let hoursWord = (hours === 1) ? 'hour' : 'hours';
+    let minutesWord = (minutes === 1) ? 'minute' : 'minutes';
+    let secondsWord = (seconds === 1) ? 'second' : 'seconds';
 
     client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
-
 
 }
 

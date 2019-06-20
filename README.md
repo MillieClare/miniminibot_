@@ -33,13 +33,14 @@ Current commands:
 !discord
 !quotes - MMB will post a quote from a list of pre-given quotes.
 !newquote - MMB will store the new quote in the quote list.
-
-For a full list of commands, please visit: https://bit.ly/2BZSGAM
-
-Commands to be added:
 !giveawaystart - starts giveaway (MOD ONLY)
 !enter - MMB will store username who messages this (the first time only). If subscriber, MMB will add their name x5
 !giveawayend - MMB will not store anymore entries (MODONLY)
 !decidewinner - MMB will randomly decide the winner (MODONLY)
+
+For a full list of commands, please visit: https://bit.ly/2BZSGAM
+
+Commands to be added:
+TBA
 
 Timers to be added? (messages that will be posted into chat after an interval of X minutes/messages?)

@@ -1,3 +1,0 @@
-ChannelName=Milliebug_
-UserName=miniminibot_
-Password=oauth:0l1ddwius541pn3vjcorz2rwiwdk0s

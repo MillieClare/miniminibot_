@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sounds>
+  <fanfares>
+    <fanfare enabled="true">
+      <name>FFVII victory theme</name>
+      <file>ffviifanfare.mp3</file>
+    </fanfare>
+    <fanfare enabled="true">
+      <name>Banjo Kazooie fanfare</name>
+      <file>JiggyFanfare.mp3</file>
+    </fanfare>
+    <fanfare enabled="true">
+      <name>Grandia 2 Victory theme</name>
+      <file>grandia2fanfare.mp3</file>
+    </fanfare>
+    <fanfare enabled="true">
+      <name>Grandia Victory theme</name>
+      <file>grandiafanfare.mp3</file>
+    </fanfare>
+    <fanfare enabled="true">
+      <name>Sonic 1 and 2 1up</name>
+      <file>soinc12fanfare.mp3</file>
+    </fanfare>
+    <fanfare enabled="true">
+      <name>Sonic 3 1up</name>
+      <file>sonic3fanfare.mp3</file>
+    </fanfare>
+    <fanfare enabled="true">
+      <name>Sonic and Knuckles 1up</name>
+      <file>sonickfanfare.mp3</file>
+    </fanfare>
+  </fanfares>
+  <soundclips>
+    <soundclip enabled="true">
+      <name>holdit</name>
+      <file>HOLD IT.mp3</file>
+    </soundclip>"
+  </soundclips>
+</sounds>

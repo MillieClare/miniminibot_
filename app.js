@@ -49,6 +49,7 @@ let knownCommands = {
     enter,
     giveawayend,
     decidewinner,
+    sc,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
@@ -160,16 +161,11 @@ function fanfare(target, context, params) {
     if (!soundsCoolDownCheck()) { return; }
     //Get folder location of farfare files
     let fanfarepath = path.join(soundspath, "fanfare");
-    //list all mp3s in this array
-    let fanfarearray = [
-        "ffviifanfare.mp3",
-        "JiggyFanfare.mp3",
-        "grandia2fanfare.mp3",
-        "grandiafanfare.mp3",
-        "soinc12fanfare.mp3",
-        "sonic3fanfare.mp3",
-        "sonickfanfare.mp3",
-    ];
+    let fanfarearray = getFanfareFileList();
+    if (fanfarearray.length === 0) {
+        console.log("No fanfares found, please check the xml file");
+        return;
+    }
     //generate random key from array length
     let fanfarekey = Math.floor(Math.random() * fanfarearray.length);
     //add file to the folder path
@@ -181,6 +177,49 @@ function fanfare(target, context, params) {
     //set new cooldown time
     soundcooldown = new Date();
     soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
+}
+
+function getFanfareFileList() {
+    let filename = path.join(botinfopath, "sounds.xml");
+    let xmldata = getXMLFileObject(filename);
+    let xmlfanfare = xmldata["sounds"]["fanfares"][0]["fanfare"];
+    let tmpArray = [];
+    for (let i = 0; i < xmlfanfare.length; i++) {
+        if (xmlfanfare[i]["ATTR"]["enabled"] === "true") {
+            tmpArray.push(xmlfanfare[i]["file"][0]);
+        }
+    }
+    return tmpArray;
+}
+//sound clip command example !sc holdit
+function sc(target, context, params) {
+    if (params.length < 1) {
+        console.log("No sound clip file has been entered");
+        return;
+    }
+    if (!soundsCoolDownCheck()) { return; }
+    let scpath = path.join(soundspath, "soundclip");
+    let scarray = getSoundClipList();
+    if (!(params[0] in scarray)) {
+        console.log(`Could not find sound clip for ${params[0]}`);
+        return;
+    }
+    playSound(path.join(scpath, scarray[params[0]]));
+    soundcooldown = new Date();
+    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
+}
+
+function getSoundClipList() {
+    let filename = path.join(botinfopath, "sounds.xml");
+    let xmldata = getXMLFileObject(filename);
+    let xmlsc = xmldata["sounds"]["soundclips"][0]["soundclip"];
+    let tmpArray = [];
+    for (let i = 0; i < xmlsc.length; i++) {
+        if (xmlsc[i]["ATTR"]["enabled"] === "true") {
+            tmpArray[xmlsc[i]["name"][0]] = xmlsc[i]["file"][0];
+        }
+    }
+    return tmpArray;
 }
 
 function giveawaystart(target, context, params) {

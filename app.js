@@ -206,7 +206,7 @@ function enter(target, context, params) {
     for (let i = 0; i < numEnteries; i++) {
         giveawayentrylist.push(context.username);
     }
-    console.log(`${context.username} has enter the context ${numEnteries} time(s)`);
+    console.log(`${context.username} has enter the giveaway ${numEnteries} time(s)`);
 }
 
 function checkuserentry(username) {

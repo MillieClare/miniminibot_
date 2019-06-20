@@ -19,6 +19,8 @@
       <subwelcome>false</subwelcome>
       <commandperfix>!</commandperfix>
       <soundcooldown>30</soundcooldown>
+      <giveawaysubenteries>5</giveawaysubenteries>
+      <giveawaydefaultenteries>1</giveawaydefaultenteries>
     </settings>
   </bot>
 </config>

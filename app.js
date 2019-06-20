@@ -223,13 +223,13 @@ function getSoundClipList() {
 }
 
 function giveawaystart(target, context, params) {
-    if (!context.mod) {
+    if (!context.mod || context.badges["broadcaster"] != 1) {
         console.log(`${context.username} tried to start a giveaway but is not a mod`)
         return;
     }
     giveawayentrylist = [];
     giveawayopen = true;
-    client.say(channelName, "The Milliebug giveaway has begun. If you would like to entery please type !enter");
+    client.say(channelName, "The Milliebug giveaway has begun. If you would like to enter please type !enter");
 }
 
 function enter(target, context, params) {
@@ -256,7 +256,7 @@ function checkuserentry(username) {
 }
 
 function giveawayend(target, context, params) {
-    if (!context.mod) {
+    if (!context.mod || context.badges["broadcaster"] != 1) {
         console.log(`${context.username} tried to end a giveaway but is not a mod`)
         return;
     }
@@ -265,7 +265,7 @@ function giveawayend(target, context, params) {
 }
 
 function decidewinner(target, context, params) {
-    if (!context.mod) {
+    if (!context.mod || context.badges["broadcaster"] != 1) {
         console.log(`${context.username} tried to decide the winner of the giveaway but is not a mod`)
         return;
     }

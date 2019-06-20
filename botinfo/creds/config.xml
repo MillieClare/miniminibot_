@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <settings>
+    <options>
+      <debug>true</debug>
+    </options>
+    <connection>
+      <cluster>aws</cluster>
+      <reconnect>true</reconnect>
+    </connection>
+  </settings>
+  <bot>
+    <info>
+      <channelname>Milliebug_</channelname>
+      <username>miniminibot_</username>
+      <password>oauth:0l1ddwius541pn3vjcorz2rwiwdk0s</password>
+    </info>
+    <settings>
+      <subwelcome>false</subwelcome>
+      <commandperfix>!</commandperfix>
+      <soundcooldown>30</soundcooldown>
+      <giveawaysubenteries>5</giveawaysubenteries>
+      <giveawaydefaultenteries>1</giveawaydefaultenteries>
+    </settings>
+  </bot>
+</config>

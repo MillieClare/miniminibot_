@@ -1,9 +1,11 @@
 {
   "ExpandedNodes": [
     "",
+    "\\botinfo",
+    "\\botinfo\\creds",
     "\\sounds",
     "\\sounds\\fanfare"
   ],
-  "SelectedNode": "\\app.js",
+  "SelectedNode": "\\README.md",
   "PreviewInSolutionExplorer": false
 }

@@ -3,35 +3,27 @@
 const fs = require("fs");
 const path = require("path");
 const tmi = require('tmi.js');
-const player = require('play-sound')();
+const xml2js = require('xml2js');
+const player = require('play-sound')({player: "ffplay"}); //decided on ffplay as it is more realiable when playing mp3s
+
+let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
 //moved bot information to external text file
 const botinfopath = path.join(__dirname, "botinfo");
-const channelName = getBotCreds("ChannelName");
+let channelName = ""; //this variable can be set in the config xml file
 
-//this should help with keeping information secure
-const options = {
-    options: {
-        debug: true
-    },
-    connection: {
-        cluster: "aws",
-        reconnect: true
-    },
-    identity: {
-        username: getBotCreds("UserName"),
-        password: getBotCreds("Password"),
-    },
-    channels: [channelName]
-
-};
 //these are the sound variables
 const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
-const soundcooldownseconds = 30; //this is the default cooldown time can be ajusted to users needs
+let soundcooldownseconds = 0; //this variable can be set in the config xml file
 let soundcooldown = new Date(); //set cooldown to date type
 
+let subwelcome = false; //this variable can be set in the config xml file
+let sublist = setUpSubList();
 
-
+let giveawayentrylist = [];
+let giveawayopen = false;
+let giveawaysubenteries = 0; //this variable can be set in the config xml file
+let giveawaydefaultenteries = 0; //this variable can be set in the config xml file
 
 let knownCommands = {
     twitter,
@@ -53,27 +45,102 @@ let knownCommands = {
     fanfare,
     quotes,
     newquote,
+    giveawaystart,
+    enter,
+    giveawayend,
+    decidewinner,
+    sc,
 };
 
-let commandPrefix = '!';
-
-const client = new tmi.client(options);
+let commandPrefix = ""; //this variable can be set in the config xml file
+const client = new tmi.client(getConfigSettings());
 client.connect();
 
-//function for retrieveing information from the botinfo text file
-function getBotCreds(fieldName) {
-    let filename = path.join(botinfopath, "creds", "botinfo.txt");
+function getXMLFileObject(filename) {
     if (!fs.existsSync(filename)) {
-        console.log("Could not find bot infomation text file")
+        console.log("Could not find requested xml file")
         return;
     }
-    let data = fs.readFileSync(filename, "utf8").split("\n");
-    for (let i = 0; i < data.length; i++) {
-        let fieldData = data[i].split("=");
-        if (fieldData[0] === fieldName) {
-            return fieldData[1];
+    let xmlstring = fs.readFileSync(filename, "utf8");
+    let xmlfile;
+    parser.parseString(xmlstring, function (err, result) {
+        if (err) throw err;
+        xmlfile = result;
+    });
+    return xmlfile;
+}
+
+function playSound(filename) {
+    player.play(filename, { ffplay: ["-nodisp"] }, (err) => {
+        if (err) console.log('error ' + err);
+    });
+}
+
+//moved settings to xml file, new function should contruct options for tmi
+function getConfigSettings() {
+    let filename = path.join(botinfopath, "creds", "config.xml");
+    let xmlfile = getXMLFileObject(filename);
+
+    //global settings
+    commandPrefix = xmlfile["config"]["bot"][0]["settings"][0]["commandperfix"][0];
+    soundcooldownseconds = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["soundcooldown"][0]) ? 0 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["soundcooldown"][0]));
+    subwelcome = (xmlfile["config"]["bot"][0]["settings"][0]["subwelcome"][0] === "true");
+    giveawaysubenteries = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["giveawaysubenteries"][0]) ? 1 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["giveawaysubenteries"][0]));
+    giveawaydefaultenteries = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]) ? 1 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]));
+    channelName = xmlfile["config"]["bot"][0]["info"][0]["channelname"][0];
+    //end of global settings
+
+    let options = {
+        options: {
+            debug: (xmlfile["config"]["settings"][0]["options"][0]["debug"][0] === "true"),
+        },
+        connection: {
+            cluster: xmlfile["config"]["settings"][0]["connection"][0]["cluster"][0],
+            reconnect: (xmlfile["config"]["settings"][0]["connection"][0]["reconnect"][0] === "true"),
+        },
+        identity: {
+            username: xmlfile["config"]["bot"][0]["info"][0]["username"][0],
+            password: xmlfile["config"]["bot"][0]["info"][0]["password"][0],
+        },
+        channels: [channelName]
+    };
+    return options;
+}
+
+function setUpSubList() {
+    let filename = path.join(botinfopath, "sublist.xml");
+    let xmlfile = getXMLFileObject(filename);
+
+    let subarray = xmlfile["subs"]["sub"]
+
+    let tmpList = [];
+    for (let i = 0; i < subarray.length; i++) {
+        let username = subarray[i]["username"][0];
+        tmpList[username] = {
+            welcomesong: subarray[i]["welcomesong"][0],
+            welcomed: false,
         }
     }
+    return tmpList;
+}
+
+function playSubWelcomeSong(context) {
+    let filepath = path.join(soundspath, "subwelcome");
+    //check if in sublist
+    if (context.username in sublist) {
+        if (sublist[context.username]["welcomed"]) { return; }
+        filepath = path.join(filepath,sublist[context.username]["welcomesong"]);
+        sublist[context.username]["welcomed"] = true;
+        playSound(filepath);
+        return;
+    }
+    //if not in sub list play default and add to sub list
+    filepath = path.join(filepath, "default.mp3");
+    sublist[context.username] = {
+        welcomesong: "default.mp3",
+        welcomed: true,
+    };
+    playSound(filepath);
 }
 
 function soundsCoolDownCheck() {
@@ -94,24 +161,121 @@ function fanfare(target, context, params) {
     if (!soundsCoolDownCheck()) { return; }
     //Get folder location of farfare files
     let fanfarepath = path.join(soundspath, "fanfare");
-    //list all mp3s in this array
-    let fanfarearray = [
-        "ffviifanfare.mp3",
-        "JiggyFanfare.mp3",
-    ];
+    let fanfarearray = getFanfareFileList();
+    if (fanfarearray.length === 0) {
+        console.log("No fanfares found, please check the xml file");
+        return;
+    }
     //generate random key from array length
-    let fanfarekey = Math.floor(Math.random() * fanfarearray.length);;
+    let fanfarekey = Math.floor(Math.random() * fanfarearray.length);
     //add file to the folder path
     var filepath = path.join(fanfarepath, fanfarearray[fanfarekey]);
     //display what file is being requested
     console.log("Playing: " + fanfarearray[fanfarekey]);
     //play file using install cmd mp3 player, throw error if one can not be found
-    player.play(filepath, (err) => {
-        if (err) console.log('error ' + err);
-    });
+    playSound(filepath);
     //set new cooldown time
     soundcooldown = new Date();
     soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
+}
+
+function getFanfareFileList() {
+    let filename = path.join(botinfopath, "sounds.xml");
+    let xmldata = getXMLFileObject(filename);
+    let xmlfanfare = xmldata["sounds"]["fanfares"][0]["fanfare"];
+    let tmpArray = [];
+    for (let i = 0; i < xmlfanfare.length; i++) {
+        if (xmlfanfare[i]["ATTR"]["enabled"] === "true") {
+            tmpArray.push(xmlfanfare[i]["file"][0]);
+        }
+    }
+    return tmpArray;
+}
+//sound clip command example !sc holdit
+function sc(target, context, params) {
+    if (params.length < 1) {
+        console.log("No sound clip file has been entered");
+        return;
+    }
+    if (!soundsCoolDownCheck()) { return; }
+    let scpath = path.join(soundspath, "soundclip");
+    let scarray = getSoundClipList();
+    if (!(params[0] in scarray)) {
+        console.log(`Could not find sound clip for ${params[0]}`);
+        return;
+    }
+    playSound(path.join(scpath, scarray[params[0]]));
+    soundcooldown = new Date();
+    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
+}
+
+function getSoundClipList() {
+    let filename = path.join(botinfopath, "sounds.xml");
+    let xmldata = getXMLFileObject(filename);
+    let xmlsc = xmldata["sounds"]["soundclips"][0]["soundclip"];
+    let tmpArray = [];
+    for (let i = 0; i < xmlsc.length; i++) {
+        if (xmlsc[i]["ATTR"]["enabled"] === "true") {
+            tmpArray[xmlsc[i]["name"][0]] = xmlsc[i]["file"][0];
+        }
+    }
+    return tmpArray;
+}
+
+function giveawaystart(target, context, params) {
+    if (!context.mod) {
+        console.log(`${context.username} tried to start a giveaway but is not a mod`)
+        return;
+    }
+    giveawayentrylist = [];
+    giveawayopen = true;
+    client.say(channelName, "The Milliebug giveaway has begun. If you would like to entery please type !enter");
+}
+
+function enter(target, context, params) {
+    if (!giveawayopen) {
+        console.log("There is no giveaway live right now.")
+        return;
+    }
+    if (checkuserentry(context.username)) {
+        console.log(`${context.username} has already entered the giveaway`)
+        return;
+    }
+    let numEnteries = context.subscriber ? giveawaysubenteries : giveawaydefaultenteries;
+    for (let i = 0; i < numEnteries; i++) {
+        giveawayentrylist.push(context.username);
+    }
+    console.log(`${context.username} has enter the giveaway ${numEnteries} time(s)`);
+}
+
+function checkuserentry(username) {
+    for (let i = 0; i < giveawayentrylist.length; i++) {
+        if (giveawayentrylist[i] === username) { return true; }
+    }
+    return false;
+}
+
+function giveawayend(target, context, params) {
+    if (!context.mod) {
+        console.log(`${context.username} tried to end a giveaway but is not a mod`)
+        return;
+    }
+    giveawayopen = false;
+    client.say(channelName, "The Milliebug giveaway has ended. The winner will be drawn soon. Good luck to everyone! millie4Hype");
+}
+
+function decidewinner(target, context, params) {
+    if (!context.mod) {
+        console.log(`${context.username} tried to decide the winner of the giveaway but is not a mod`)
+        return;
+    }
+    if (giveawayopen || giveawayentrylist.length < 1) {
+        console.log("Giveaway is still open or there are no enteries, a winner can not be decided.");
+        return;
+    }
+    let winnernumber = Math.floor(Math.random() * giveawayentrylist.length);
+    client.say(channelName, "The winner of the giveaway is......");
+    client.say(channelName, `millie4Hype ${giveawayentrylist[winnernumber]} millie4Hype CONGRATULATIONS millie4Hype`)
 }
 
 function twitter(target, context, params) {
@@ -119,7 +283,10 @@ function twitter(target, context, params) {
 }
 
 function raid(target, context, params) {
-    client.say(channelName, "Sub message:\nmillie4Hype millie4Hype MINI RAID millie4Hype millie4Hype\nNon-sub message:\nPurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
+    client.say(channelName, "Sub message:");
+    client.say(channelName, "millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype");
+    client.say(channelName, "Non-sub message:");
+    client.say(channelName, "PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
 }
 
 function focus(target, context, params) {
@@ -127,7 +294,7 @@ function focus(target, context, params) {
 }
 
 function pb(target, context, params) {
-    client.say(channelName, "Millie's best time is currently 3 hours, 45 minutes and 18 seconds!");
+    client.say(channelName, "Millie's best time in zootr is currently 3 hours, 45 minutes and 18 seconds!");
 }
 
 function zootr(target, context, params) {
@@ -139,7 +306,11 @@ function commands(target, context, params) {
 }
 
 function so(target, context, params) {
-    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love!`);
+    if (params.length < 1) {
+        console.log("No channel name given")
+        return;
+    }
+    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love! millie4Cute`);
 }
 
 function time(target, context, params) {
@@ -239,24 +410,11 @@ function uptime(target, context, params) {
     let minutes = Math.floor(timeDifference / (1000 * 60)) % 60;
     let seconds = Math.floor(timeDifference / 1000) % 60;
 
-    let hoursWord = 'hours';
-    let minutesWord = 'minutes';
-    let secondsWord = 'seconds';
-
-    if (seconds === 1) {
-        secondsWord = 'second';
-    }
-
-    if (minutes === 1) {
-        minutesWord = 'minute';
-    }
-
-    if (hours === 1) {
-        hoursWord = 'hour';
-    }
+    let hoursWord = (hours === 1) ? 'hour' : 'hours';
+    let minutesWord = (minutes === 1) ? 'minute' : 'minutes';
+    let secondsWord = (seconds === 1) ? 'second' : 'seconds';
 
     client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
-
 
 }
 
@@ -265,6 +423,9 @@ function uptime(target, context, params) {
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
+    }
+    if (subwelcome && context.subscriber) {
+        playSubWelcomeSong(context);
     }
     if (msg.charAt(0) !== commandPrefix) {
         console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`);

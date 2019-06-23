@@ -2,10 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\botinfo",
-    "\\botinfo\\creds",
-    "\\sounds",
     "\\sounds\\fanfare"
   ],
-  "SelectedNode": "\\README.md",
+  "SelectedNode": "\\mbdb.db",
   "PreviewInSolutionExplorer": false
 }

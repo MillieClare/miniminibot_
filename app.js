@@ -4,18 +4,19 @@ const fs = require("fs");
 const path = require("path");
 const tmi = require('tmi.js');
 const xml2js = require('xml2js');
-const player = require('play-sound')({player: "ffplay"}); //decided on ffplay as it is more realiable when playing mp3s
+const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
+const db = require("./db.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
 //moved bot information to external text file
 const botinfopath = path.join(__dirname, "botinfo");
 let channelName = ""; //this variable can be set in the config xml file
-
 //these are the sound variables
 const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
 let soundcooldownseconds = 0; //this variable can be set in the config xml file
 let soundcooldown = new Date(); //set cooldown to date type
+let fanfarelist = [];
 
 let subwelcome = false; //this variable can be set in the config xml file
 let sublist = setUpSubList();
@@ -161,35 +162,21 @@ function fanfare(target, context, params) {
     if (!soundsCoolDownCheck()) { return; }
     //Get folder location of farfare files
     let fanfarepath = path.join(soundspath, "fanfare");
-    let fanfarearray = getFanfareFileList();
-    if (fanfarearray.length === 0) {
-        console.log("No fanfares found, please check the xml file");
-        return;
-    }
-    //generate random key from array length
-    let fanfarekey = Math.floor(Math.random() * fanfarearray.length);
-    //add file to the folder path
-    var filepath = path.join(fanfarepath, fanfarearray[fanfarekey]);
     //display what file is being requested
-    console.log("Playing: " + fanfarearray[fanfarekey]);
-    //play file using install cmd mp3 player, throw error if one can not be found
-    playSound(filepath);
-    //set new cooldown time
-    soundcooldown = new Date();
-    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
-}
-
-function getFanfareFileList() {
-    let filename = path.join(botinfopath, "sounds.xml");
-    let xmldata = getXMLFileObject(filename);
-    let xmlfanfare = xmldata["sounds"]["fanfares"][0]["fanfare"];
-    let tmpArray = [];
-    for (let i = 0; i < xmlfanfare.length; i++) {
-        if (xmlfanfare[i]["ATTR"]["enabled"] === "true") {
-            tmpArray.push(xmlfanfare[i]["file"][0]);
+    category = params.join(' ').toLowerCase();
+    db.getFanfares("fanfare", category, "", function (err, data) {
+        if (err) {
+            category === "" ? console.error("No fanfare was found") : console.error(`No fanfare found with category (${category})`);
+            return;
+        } else {
+            let fanfarekey = Math.floor(Math.random() * data.length);
+            let songfile = data[fanfarekey]["filename"];
+            console.log(`Playing: ${songfile}`);
+            playSound(path.join(fanfarepath, songfile));
+            soundcooldown = new Date();
+            soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
         }
-    }
-    return tmpArray;
+    });
 }
 //sound clip command example !sc holdit
 function sc(target, context, params) {

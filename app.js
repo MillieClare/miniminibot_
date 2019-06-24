@@ -25,6 +25,9 @@ let giveawayopen = false;
 let giveawaysubenteries = 0; //this variable can be set in the config xml file
 let giveawaydefaultenteries = 0; //this variable can be set in the config xml file
 
+let hiresponses = [];
+let howareyouresponses = [];
+
 let knownCommands = {
     twitter,
     commands,
@@ -97,6 +100,20 @@ function getConfigSettings() {
             return;
         }
         sublist = data;
+    });
+    db.getResponses("hi",function (err, data) {
+        if (err) {
+            console.lof(err);
+            return;
+        }
+        hiresponses = data;
+    });
+    db.getResponses("howareyou", function (err, data) {
+        if (err) {
+            console.lof(err);
+            return;
+        }
+        howareyouresponses = data;
     });
     //end of db data
 
@@ -298,26 +315,14 @@ function time(target, context, params) {
 }
 
 function hi(target, context, params) {
-    let filename = path.join(botinfopath, "responses", "hi.txt");
-    if (!fs.existsSync(filename)) {
-        console.log("Could not find Hi responses text file")
-        return;
-    }
-    let responses = fs.readFileSync(filename, "utf8").split("\n");
-    let responseNumber = Math.floor(Math.random() * responses.length);
-    let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
+    let responseNumber = Math.floor(Math.random() * hiresponses.length);
+    let response = hiresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
     client.say(channelName, response);
 }
 
 function howareyou(target, context, params) {
-    let filename = path.join(botinfopath, "responses", "howareyou.txt");
-    if (!fs.existsSync(filename)) {
-        console.log("Could not find Howareyou responses text file")
-        return;
-    }
-    let responses = fs.readFileSync(filename, "utf8").split("\n");
-    let responseNumber = Math.floor(Math.random() * responses.length);
-    let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
+    let responseNumber = Math.floor(Math.random() * howareyouresponses.length);
+    let response = howareyouresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
     client.say(channelName, response);
 }
 

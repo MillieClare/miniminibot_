@@ -3,6 +3,7 @@ module.exports = {
     dbCheck: dbCheck,
     getFanfares: getSoundList,
     getSublist: getSubList,
+    getResponses: getResponses,
 };
 function getDB() {
     let db = new sqlite3.Database("mbdb.db", (err) => {
@@ -72,6 +73,21 @@ function getSubList(callback) {
                     welcomesong: row.songfile,
                     welcomed: false,
                 };
+            });
+            callback(null, tmp);
+        }
+    });
+}
+
+function getResponses(type, callback) {
+    let sql = `SELECT response FROM Responses WHERE type = \"${type}\"`;
+    getDBdata(sql, function (err, rows) {
+        if (err) {
+            callback(err, null);
+        } else {
+            let tmp = [];
+            rows.forEach(function (row) {
+                tmp.push(row.response);
             });
             callback(null, tmp);
         }

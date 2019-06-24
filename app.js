@@ -6,6 +6,7 @@ const tmi = require('tmi.js');
 const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
 const db = require("./db.js");
+const bcmd = require("./basiccmds.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
@@ -29,22 +30,22 @@ let hiresponses = [];
 let howareyouresponses = [];
 
 let knownCommands = {
-    twitter,
-    commands,
-    so,
-    time,
-    sub,
-    follow,
-    hype,
-    lurk,
-    discord,
+    twitter: bcmd.twitter,
+    commands: bcmd.commands,
+    so: bcmd.so,
+    time: bcmd.time,
+    sub: bcmd.sub,
+    follow: bcmd.follow,
+    hype: bcmd.hype,
+    lurk: bcmd.lurk,
+    discord: bcmd.discord,
     hi,
     uptime,
     howareyou,
-    raid,
-    focus,
-    pb,
-    zootr,
+    raiod: bcmd.raid,
+    focus: bcmd.focus,
+    pb: bcmd.pb,
+    zootr: bcmd.zootr,
     fanfare,
     quotes,
     newquote,
@@ -267,53 +268,6 @@ function decidewinner(target, context, params) {
     client.say(channelName, `millie4Hype ${giveawayentrylist[winnernumber]} millie4Hype CONGRATULATIONS millie4Hype`)
 }
 
-function twitter(target, context, params) {
-    client.say(channelName, "You can follow Millie on Twitter www.twitter.com/_Milliebug_ !");
-}
-
-function raid(target, context, params) {
-    client.say(channelName, "Sub message:");
-    client.say(channelName, "millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype");
-    client.say(channelName, "Non-sub message:");
-    client.say(channelName, "PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
-}
-
-function focus(target, context, params) {
-    client.say(channelName, "Millie isn't very good at multi-tasking! She will definitely reply to your message once things cool down in-game!");
-}
-
-function pb(target, context, params) {
-    client.say(channelName, "Millie's best time in zootr is currently 3 hours, 45 minutes and 18 seconds!");
-}
-
-function zootr(target, context, params) {
-    client.say(channelName, "In this version of Zelda, all of the items have been randomly shuffled for a more dynamic player experience.");
-}
-
-function commands(target, context, params) {
-    client.say(channelName, "Current commands can be found here: https://bit.ly/2BZSGAM");
-}
-
-function so(target, context, params) {
-    if (params.length < 1) {
-        console.log("No channel name given")
-        return;
-    }
-    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love! millie4Cute`);
-}
-
-function time(target, context, params) {
-    let d = new Date();
-    let hour = d.getHours();
-    let min = d.getMinutes();
-    let sec = d.getSeconds();
-    if (hour < 10) { hour = `0${hour}`; }
-    if (min < 10) { min = `0${min}`; }
-    if (sec < 10) { sec = `0${sec}`; }
-    client.say(channelName, `Millie's timezone is BST, the current time is ${hour}:${min}:${sec}`);
-
-}
-
 function hi(target, context, params) {
     let responseNumber = Math.floor(Math.random() * hiresponses.length);
     let response = hiresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
@@ -356,28 +310,6 @@ function newquote(target, context, params) {
     });
 }
 
-function sub(target, context, params) {
-    client.say(channelName, "Enjoying the stream? Want your own song? Click here -> twitch.tv/products/milliebug_ or use Twitch Prime to sub for free!");
-}
-
-function follow(target, context, params) {
-    client.say(channelName, "Smash that follow button for a cookie <3");
-}
-
-function hype(target, context, params) {
-    client.say(channelName, "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
-}
-
-function lurk(target, context, params) {
-    client.say(channelName, "Lurk mode activated! Remember that when you mute a stream you do not count as a viewer! Please mute the tab or window instead - you rock!");
-}
-
-function discord(target, context, params) {
-    client.say(channelName, "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
-}
-
-
-
 function uptime(target, context, params) {
     let currentTime = new Date();
     let timeDifference = currentTime.getTime() - startTime.getTime();
@@ -394,8 +326,6 @@ function uptime(target, context, params) {
     client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
 
 }
-
-
 
 function onMessageHandler(target, context, msg, self) {
     if (self) {
@@ -421,7 +351,7 @@ function onMessageHandler(target, context, msg, self) {
 
         const command = knownCommands[commandName];
 
-        command(target, context, params);
+        command(target, context, params, client, channelName);
         console.log(`* Executed ${commandName} command for ${context.username}`);
     } else {
         console.log(`* Unknown command ${commandName} from ${context.username}`);
@@ -430,9 +360,7 @@ function onMessageHandler(target, context, msg, self) {
 
 client.on("message", onMessageHandler);
 
-
 let startTime;
-
 
 client.on("connected", function (address, port) {
     console.log("Address: " + address + " Port: " + port);

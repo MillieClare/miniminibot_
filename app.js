@@ -16,10 +16,9 @@ let channelName = ""; //this variable can be set in the config xml file
 const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
 let soundcooldownseconds = 0; //this variable can be set in the config xml file
 let soundcooldown = new Date(); //set cooldown to date type
-let fanfarelist = [];
 
 let subwelcome = false; //this variable can be set in the config xml file
-let sublist = setUpSubList();
+let sublist = [];
 
 let giveawayentrylist = [];
 let giveawayopen = false;
@@ -68,6 +67,7 @@ function getXMLFileObject(filename) {
         if (err) throw err;
         xmlfile = result;
     });
+
     return xmlfile;
 }
 
@@ -90,6 +90,15 @@ function getConfigSettings() {
     giveawaydefaultenteries = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]) ? 1 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]));
     channelName = xmlfile["config"]["bot"][0]["info"][0]["channelname"][0];
     //end of global settings
+    //db data
+    db.getSublist(function (err, data) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        sublist = data;
+    });
+    //end of db data
 
     let options = {
         options: {
@@ -106,23 +115,6 @@ function getConfigSettings() {
         channels: [channelName]
     };
     return options;
-}
-
-function setUpSubList() {
-    let filename = path.join(botinfopath, "sublist.xml");
-    let xmlfile = getXMLFileObject(filename);
-
-    let subarray = xmlfile["subs"]["sub"]
-
-    let tmpList = [];
-    for (let i = 0; i < subarray.length; i++) {
-        let username = subarray[i]["username"][0];
-        tmpList[username] = {
-            welcomesong: subarray[i]["welcomesong"][0],
-            welcomed: false,
-        }
-    }
-    return tmpList;
 }
 
 function playSubWelcomeSong(context) {
@@ -186,27 +178,20 @@ function sc(target, context, params) {
     }
     if (!soundsCoolDownCheck()) { return; }
     let scpath = path.join(soundspath, "soundclip");
-    let scarray = getSoundClipList();
-    if (!(params[0] in scarray)) {
-        console.log(`Could not find sound clip for ${params[0]}`);
-        return;
-    }
-    playSound(path.join(scpath, scarray[params[0]]));
-    soundcooldown = new Date();
-    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
-}
-
-function getSoundClipList() {
-    let filename = path.join(botinfopath, "sounds.xml");
-    let xmldata = getXMLFileObject(filename);
-    let xmlsc = xmldata["sounds"]["soundclips"][0]["soundclip"];
-    let tmpArray = [];
-    for (let i = 0; i < xmlsc.length; i++) {
-        if (xmlsc[i]["ATTR"]["enabled"] === "true") {
-            tmpArray[xmlsc[i]["name"][0]] = xmlsc[i]["file"][0];
+    let soundname = params.join(' ').toLowerCase();
+    db.getFanfares("clip", "", soundname, function (err, data) {
+        if (err) {
+            soundname === "" ? console.error("No sound clip was found") : console.error(`No sound clip found with name (${soundname})`);
+            return;
+        } else {
+            let soundkey = Math.floor(Math.random() * data.length);
+            let songfile = data[soundkey]["filename"];
+            console.log(`Playing: ${songfile}`);
+            playSound(path.join(scpath, songfile));
+            soundcooldown = new Date();
+            soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
         }
-    }
-    return tmpArray;
+    });
 }
 
 function giveawaystart(target, context, params) {
@@ -411,7 +396,7 @@ function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
-    if (subwelcome && context.subscriber) {
+    if (context.subscriber && subwelcome) {
         playSubWelcomeSong(context);
     }
     if (msg.charAt(0) !== commandPrefix) {

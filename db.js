@@ -2,6 +2,7 @@
 module.exports = {
     dbCheck: dbCheck,
     getFanfares: getSoundList,
+    getSublist: getSubList,
 };
 function getDB() {
     let db = new sqlite3.Database("mbdb.db", (err) => {
@@ -53,6 +54,24 @@ function getSoundList(type, category = "", name = "", callback) {
                     category: row.category,
                     filename: row.filename,
                 });
+            });
+            callback(null, tmp);
+        }
+    });
+}
+
+function getSubList(callback) {
+    let sql = 'SELECT username, songfile FROM Sublist';
+    getDBdata(sql, function (err, rows) {
+        if (err) {
+            callback(err, null);
+        } else {
+            let tmp = [];
+            rows.forEach(function (row) {
+                tmp[row.username] = {
+                    welcomesong: row.songfile,
+                    welcomed: false,
+                };
             });
             callback(null, tmp);
         }

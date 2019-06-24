@@ -2,8 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\botinfo",
-    "\\sounds\\fanfare"
+    "\\botinfo\\responses"
   ],
-  "SelectedNode": "\\mbdb.db",
+  "SelectedNode": "\\botinfo\\sublist.xml",
   "PreviewInSolutionExplorer": false
 }

@@ -54,6 +54,8 @@ let knownCommands = {
     giveawayend,
     decidewinner,
     sc,
+    bux: checkminibux,
+    addbux,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
@@ -286,32 +288,22 @@ function howareyou(target, context, params) {
 }
 
 function quotes(target, context, params) {
-    let filename = path.join(botinfopath, "quotes", "quotes.txt");
-    if (!fs.existsSync(filename)) {
-        console.log("Could not find Quotes text file")
-        return;
-    }
-    let quotes = fs.readFileSync(filename, "utf8").split("\n");
-    if (quotes.length <= 1) {
-        console.log("There are no quotes to load");
-        return;
-    }
-    quotes.pop(quotes.length);
-    let quoteNumber = Math.floor(Math.random() * quotes.length);
-    client.say(channelName, quotes[quoteNumber]);
+    db.getResponses("quote", function (err, data) {
+        if (err || !data) {
+            console.log("No quotes were found");
+            return;
+        } else {
+            let quoteNumber = Math.floor(Math.random() * data.length);
+            client.say(channelName, data[quoteNumber]);
+        }
+    });
 }
 
 function newquote(target, context, params) {
-    let filename = path.join(botinfopath, "quotes", "quotes.txt");
-    let quote = "";
-    for (let i = 0; i < params.length; i++) {
-        quote += (params[i] + ' ');
-    }
-    quote = quote.slice(0, -1);
-    quote += '\n';
-    fs.appendFile(filename, quote, function (err) {
-        if (err) throw err;
-        console.log("Quote saved");
+    let quote = params.join(' ');
+    let username = context.username;
+    db.addQuote(quote, username, function (msg) {
+        client.say(channelName, msg);
     });
 }
 
@@ -330,6 +322,49 @@ function uptime(target, context, params) {
 
     client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
 
+}
+
+function checkminibux(target, context, params) {
+    db.getCurrency(context.username, function (err, currency) {
+        if (err) {
+            console.log(err);
+        } else {
+            client.say(channelName, `${context.username} you have ${currency} minibux`)
+        }
+    });
+}
+
+function addbux(target, context, params) {
+    if (context.badges["broadcaster"] != 1) {
+        console.log(`${context.username} does not have permission to use this command`);
+        return;
+    }
+    if (params.length < 2) {
+        console.log("Incorroect parameters.");
+        console.log("EXAMPLE: !addbux usernmae 100");
+        return;
+    }
+    let adduser = params[0].replace('@', '').toLowerCase();
+    let addcurrency = params[1];
+    if (isNaN(addcurrency)) {
+        console.log(`${addcurrency} is not a valid currency value`);
+        return;
+    }
+    db.getCurrency(adduser, function (err, currency) {
+        if (err) {
+            console.log("Unable to find user to add currecy to.");
+            return;
+        }
+        let newcurrency = parseInt(currency) + parseInt(addcurrency);
+        newcurrency = newcurrency < 0 ? 0 : newcurrency;
+        db.changeCurrency(newcurrency, adduser, function (err, msg) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            client.say(channelName, msg);
+        })
+    });
 }
 
 function onMessageHandler(target, context, msg, self) {

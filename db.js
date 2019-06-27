@@ -4,6 +4,9 @@ module.exports = {
     getFanfares: getSoundList,
     getSublist: getSubList,
     getResponses: getResponses,
+    addQuote,
+    getCurrency,
+    changeCurrency,
 };
 function getDB() {
     let db = new sqlite3.Database("mbdb.db", (err) => {
@@ -30,6 +33,19 @@ function getDBdata(sql, callback) {
             callback("No data", null);
         } else {
             callback(null, rows);
+            db.close();
+        }
+    });
+}
+
+function writeDBdata(sql, callback) {
+    let db = getDB();
+    db.run(sql, function (err) {
+        if (err) {
+            console.error(err);
+            callback(err, false);
+        } else {
+            callback(null, true);
             db.close();
         }
     });
@@ -92,5 +108,36 @@ function getResponses(type, callback) {
             callback(null, tmp);
         }
     });
+}
+
+function addQuote(quote, username, callback) {
+    let sql = `INSERT INTO Responses (response, type, addedby) VALUES (\"${quote}\", \"quote\", \"${username}\")`;
+    writeDBdata(sql, function (err, success) {
+        if (err || !success) {
+            callback("Unable to add quote");
+        }
+        callback("Quote was added successfully");
+    });
+}
+
+function getCurrency(username, callback) {
+    let sql = `SELECT currency FROM Currency WHERE username=\"${username}\"`;
+    getDBdata(sql, function (err, rows) {
+        if (err) {
+            callback("No user found in table", null);
+        } else {
+            callback(null, rows[0].currency)
+        }
+    });
+}
+
+function changeCurrency(currency, username, callback) {
+    let sql = `UPDATE Currency SET currency=${currency} WHERE username=\"${username}\"`;
+    writeDBdata(sql, function (err, success) {
+        if (err || !success) {
+            callback("Currency was not updated", null)
+        }
+        callback(null, "Minibux added!");
+    })
 }
 

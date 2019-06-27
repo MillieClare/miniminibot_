@@ -2,8 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\botinfo",
-    "\\botinfo\\responses"
+    "\\botinfo\\quotes"
   ],
-  "SelectedNode": "\\botinfo\\sublist.xml",
+  "SelectedNode": "\\basiccmds.js",
   "PreviewInSolutionExplorer": false
 }

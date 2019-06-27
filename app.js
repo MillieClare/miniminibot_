@@ -83,6 +83,11 @@ function playSound(filename) {
 
 //moved settings to xml file, new function should contruct options for tmi
 function getConfigSettings() {
+    if (!db.dbCheck) {
+        console.log("Unable to connected to database");
+        process.exit();
+    }
+
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);
 

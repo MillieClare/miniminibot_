@@ -2,10 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\botinfo",
-    "\\botinfo\\creds",
-    "\\sounds",
-    "\\sounds\\fanfare"
+    "\\botinfo\\quotes"
   ],
-  "SelectedNode": "\\README.md",
+  "SelectedNode": "\\basiccmds.js",
   "PreviewInSolutionExplorer": false
 }

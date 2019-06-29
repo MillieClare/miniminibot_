@@ -4,44 +4,48 @@ const fs = require("fs");
 const path = require("path");
 const tmi = require('tmi.js');
 const xml2js = require('xml2js');
-const player = require('play-sound')({player: "ffplay"}); //decided on ffplay as it is more realiable when playing mp3s
+const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
+const db = require("./db.js");
+const bcmd = require("./basiccmds.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
 //moved bot information to external text file
 const botinfopath = path.join(__dirname, "botinfo");
 let channelName = ""; //this variable can be set in the config xml file
-
 //these are the sound variables
 const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
 let soundcooldownseconds = 0; //this variable can be set in the config xml file
 let soundcooldown = new Date(); //set cooldown to date type
 
 let subwelcome = false; //this variable can be set in the config xml file
-let sublist = setUpSubList();
+let sublist = [];
 
 let giveawayentrylist = [];
 let giveawayopen = false;
 let giveawaysubenteries = 0; //this variable can be set in the config xml file
 let giveawaydefaultenteries = 0; //this variable can be set in the config xml file
 
+let hiresponses = [];
+let howareyouresponses = [];
+
 let knownCommands = {
-    twitter,
-    commands,
-    so,
-    time,
-    sub,
-    follow,
-    hype,
-    lurk,
-    discord,
+    twitter: bcmd.twitter,
+    commands: bcmd.commands,
+    so: bcmd.so,
+    time: bcmd.time,
+    sub: bcmd.sub,
+    follow: bcmd.follow,
+    hype: bcmd.hype,
+    lurk: bcmd.lurk,
+    discord: bcmd.discord,
     hi,
     uptime,
     howareyou,
-    raid,
-    focus,
-    pb,
-    zootr,
+    raiod: bcmd.raid,
+    focus: bcmd.focus,
+    pb: bcmd.pb,
+    zootr: bcmd.zootr,
     fanfare,
     quotes,
     newquote,
@@ -50,6 +54,8 @@ let knownCommands = {
     giveawayend,
     decidewinner,
     sc,
+    bux: checkminibux,
+    addbux,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
@@ -67,6 +73,7 @@ function getXMLFileObject(filename) {
         if (err) throw err;
         xmlfile = result;
     });
+
     return xmlfile;
 }
 
@@ -78,6 +85,11 @@ function playSound(filename) {
 
 //moved settings to xml file, new function should contruct options for tmi
 function getConfigSettings() {
+    if (!db.dbCheck) {
+        console.log("Unable to connected to database");
+        process.exit();
+    }
+
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);
 
@@ -89,6 +101,29 @@ function getConfigSettings() {
     giveawaydefaultenteries = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]) ? 1 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]));
     channelName = xmlfile["config"]["bot"][0]["info"][0]["channelname"][0];
     //end of global settings
+    //db data
+    db.getSublist(function (err, data) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        sublist = data;
+    });
+    db.getResponses("hi",function (err, data) {
+        if (err) {
+            console.lof(err);
+            return;
+        }
+        hiresponses = data;
+    });
+    db.getResponses("howareyou", function (err, data) {
+        if (err) {
+            console.lof(err);
+            return;
+        }
+        howareyouresponses = data;
+    });
+    //end of db data
 
     let options = {
         options: {
@@ -105,23 +140,6 @@ function getConfigSettings() {
         channels: [channelName]
     };
     return options;
-}
-
-function setUpSubList() {
-    let filename = path.join(botinfopath, "sublist.xml");
-    let xmlfile = getXMLFileObject(filename);
-
-    let subarray = xmlfile["subs"]["sub"]
-
-    let tmpList = [];
-    for (let i = 0; i < subarray.length; i++) {
-        let username = subarray[i]["username"][0];
-        tmpList[username] = {
-            welcomesong: subarray[i]["welcomesong"][0],
-            welcomed: false,
-        }
-    }
-    return tmpList;
 }
 
 function playSubWelcomeSong(context) {
@@ -161,35 +179,21 @@ function fanfare(target, context, params) {
     if (!soundsCoolDownCheck()) { return; }
     //Get folder location of farfare files
     let fanfarepath = path.join(soundspath, "fanfare");
-    let fanfarearray = getFanfareFileList();
-    if (fanfarearray.length === 0) {
-        console.log("No fanfares found, please check the xml file");
-        return;
-    }
-    //generate random key from array length
-    let fanfarekey = Math.floor(Math.random() * fanfarearray.length);
-    //add file to the folder path
-    var filepath = path.join(fanfarepath, fanfarearray[fanfarekey]);
     //display what file is being requested
-    console.log("Playing: " + fanfarearray[fanfarekey]);
-    //play file using install cmd mp3 player, throw error if one can not be found
-    playSound(filepath);
-    //set new cooldown time
-    soundcooldown = new Date();
-    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
-}
-
-function getFanfareFileList() {
-    let filename = path.join(botinfopath, "sounds.xml");
-    let xmldata = getXMLFileObject(filename);
-    let xmlfanfare = xmldata["sounds"]["fanfares"][0]["fanfare"];
-    let tmpArray = [];
-    for (let i = 0; i < xmlfanfare.length; i++) {
-        if (xmlfanfare[i]["ATTR"]["enabled"] === "true") {
-            tmpArray.push(xmlfanfare[i]["file"][0]);
+    category = params.join(' ').toLowerCase();
+    db.getFanfares("fanfare", category, "", function (err, data) {
+        if (err) {
+            category === "" ? console.error("No fanfare was found") : console.error(`No fanfare found with category (${category})`);
+            return;
+        } else {
+            let fanfarekey = Math.floor(Math.random() * data.length);
+            let songfile = data[fanfarekey]["filename"];
+            console.log(`Playing: ${songfile}`);
+            playSound(path.join(fanfarepath, songfile));
+            soundcooldown = new Date();
+            soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
         }
-    }
-    return tmpArray;
+    });
 }
 //sound clip command example !sc holdit
 function sc(target, context, params) {
@@ -199,27 +203,20 @@ function sc(target, context, params) {
     }
     if (!soundsCoolDownCheck()) { return; }
     let scpath = path.join(soundspath, "soundclip");
-    let scarray = getSoundClipList();
-    if (!(params[0] in scarray)) {
-        console.log(`Could not find sound clip for ${params[0]}`);
-        return;
-    }
-    playSound(path.join(scpath, scarray[params[0]]));
-    soundcooldown = new Date();
-    soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
-}
-
-function getSoundClipList() {
-    let filename = path.join(botinfopath, "sounds.xml");
-    let xmldata = getXMLFileObject(filename);
-    let xmlsc = xmldata["sounds"]["soundclips"][0]["soundclip"];
-    let tmpArray = [];
-    for (let i = 0; i < xmlsc.length; i++) {
-        if (xmlsc[i]["ATTR"]["enabled"] === "true") {
-            tmpArray[xmlsc[i]["name"][0]] = xmlsc[i]["file"][0];
+    let soundname = params.join(' ').toLowerCase();
+    db.getFanfares("clip", "", soundname, function (err, data) {
+        if (err) {
+            soundname === "" ? console.error("No sound clip was found") : console.error(`No sound clip found with name (${soundname})`);
+            return;
+        } else {
+            let soundkey = Math.floor(Math.random() * data.length);
+            let songfile = data[soundkey]["filename"];
+            console.log(`Playing: ${songfile}`);
+            playSound(path.join(scpath, songfile));
+            soundcooldown = new Date();
+            soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
         }
-    }
-    return tmpArray;
+    });
 }
 
 function giveawaystart(target, context, params) {
@@ -278,128 +275,37 @@ function decidewinner(target, context, params) {
     client.say(channelName, `millie4Hype ${giveawayentrylist[winnernumber]} millie4Hype CONGRATULATIONS millie4Hype`)
 }
 
-function twitter(target, context, params) {
-    client.say(channelName, "You can follow Millie on Twitter www.twitter.com/_Milliebug_ !");
-}
-
-function raid(target, context, params) {
-    client.say(channelName, "Sub message:");
-    client.say(channelName, "millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype");
-    client.say(channelName, "Non-sub message:");
-    client.say(channelName, "PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
-}
-
-function focus(target, context, params) {
-    client.say(channelName, "Millie isn't very good at multi-tasking! She will definitely reply to your message once things cool down in-game!");
-}
-
-function pb(target, context, params) {
-    client.say(channelName, "Millie's best time in zootr is currently 3 hours, 45 minutes and 18 seconds!");
-}
-
-function zootr(target, context, params) {
-    client.say(channelName, "In this version of Zelda, all of the items have been randomly shuffled for a more dynamic player experience.");
-}
-
-function commands(target, context, params) {
-    client.say(channelName, "Current commands can be found here: https://bit.ly/2BZSGAM");
-}
-
-function so(target, context, params) {
-    if (params.length < 1) {
-        console.log("No channel name given")
-        return;
-    }
-    client.say(channelName, `Thank you twitch.tv/${params[0]} for supporting the channel - make sure to show them some love! millie4Cute`);
-}
-
-function time(target, context, params) {
-    let d = new Date();
-    let hour = d.getHours();
-    let min = d.getMinutes();
-    let sec = d.getSeconds();
-    if (hour < 10) { hour = `0${hour}`; }
-    if (min < 10) { min = `0${min}`; }
-    if (sec < 10) { sec = `0${sec}`; }
-    client.say(channelName, `Millie's timezone is BST, the current time is ${hour}:${min}:${sec}`);
-
-}
-
 function hi(target, context, params) {
-    let filename = path.join(botinfopath, "responses", "hi.txt");
-    if (!fs.existsSync(filename)) {
-        console.log("Could not find Hi responses text file")
-        return;
-    }
-    let responses = fs.readFileSync(filename, "utf8").split("\n");
-    let responseNumber = Math.floor(Math.random() * responses.length);
-    let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
+    let responseNumber = Math.floor(Math.random() * hiresponses.length);
+    let response = hiresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
     client.say(channelName, response);
 }
 
 function howareyou(target, context, params) {
-    let filename = path.join(botinfopath, "responses", "howareyou.txt");
-    if (!fs.existsSync(filename)) {
-        console.log("Could not find Howareyou responses text file")
-        return;
-    }
-    let responses = fs.readFileSync(filename, "utf8").split("\n");
-    let responseNumber = Math.floor(Math.random() * responses.length);
-    let response = responses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
+    let responseNumber = Math.floor(Math.random() * howareyouresponses.length);
+    let response = howareyouresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
     client.say(channelName, response);
 }
 
 function quotes(target, context, params) {
-    let filename = path.join(botinfopath, "quotes", "quotes.txt");
-    if (!fs.existsSync(filename)) {
-        console.log("Could not find Quotes text file")
-        return;
-    }
-    let quotes = fs.readFileSync(filename, "utf8").split("\n");
-    if (quotes.length <= 1) {
-        console.log("There are no quotes to load");
-        return;
-    }
-    quotes.pop(quotes.length);
-    let quoteNumber = Math.floor(Math.random() * quotes.length);
-    client.say(channelName, quotes[quoteNumber]);
-}
-
-function newquote(target, context, params) {
-    let filename = path.join(botinfopath, "quotes", "quotes.txt");
-    let quote = "";
-    for (let i = 0; i < params.length; i++) {
-        quote += (params[i] + ' ');
-    }
-    quote = quote.slice(0, -1);
-    quote += '\n';
-    fs.appendFile(filename, quote, function (err) {
-        if (err) throw err;
-        console.log("Quote saved");
+    db.getResponses("quote", function (err, data) {
+        if (err || !data) {
+            console.log("No quotes were found");
+            return;
+        } else {
+            let quoteNumber = Math.floor(Math.random() * data.length);
+            client.say(channelName, data[quoteNumber]);
+        }
     });
 }
 
-function sub(target, context, params) {
-    client.say(channelName, "Enjoying the stream? Want your own song? Click here -> twitch.tv/products/milliebug_ or use Twitch Prime to sub for free!");
+function newquote(target, context, params) {
+    let quote = params.join(' ');
+    let username = context.username;
+    db.addQuote(quote, username, function (msg) {
+        client.say(channelName, msg);
+    });
 }
-
-function follow(target, context, params) {
-    client.say(channelName, "Smash that follow button for a cookie <3");
-}
-
-function hype(target, context, params) {
-    client.say(channelName, "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
-}
-
-function lurk(target, context, params) {
-    client.say(channelName, "Lurk mode activated! Remember that when you mute a stream you do not count as a viewer! Please mute the tab or window instead - you rock!");
-}
-
-function discord(target, context, params) {
-    client.say(channelName, "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
-}
-
-
 
 function uptime(target, context, params) {
     let currentTime = new Date();
@@ -418,13 +324,54 @@ function uptime(target, context, params) {
 
 }
 
+function checkminibux(target, context, params) {
+    db.getCurrency(context.username, function (err, currency) {
+        if (err) {
+            console.log(err);
+        } else {
+            client.say(channelName, `${context.username} you have ${currency} minibux`)
+        }
+    });
+}
 
+function addbux(target, context, params) {
+    if (context.badges["broadcaster"] != 1) {
+        console.log(`${context.username} does not have permission to use this command`);
+        return;
+    }
+    if (params.length < 2) {
+        console.log("Incorroect parameters.");
+        console.log("EXAMPLE: !addbux usernmae 100");
+        return;
+    }
+    let adduser = params[0].replace('@', '').toLowerCase();
+    let addcurrency = params[1];
+    if (isNaN(addcurrency)) {
+        console.log(`${addcurrency} is not a valid currency value`);
+        return;
+    }
+    db.getCurrency(adduser, function (err, currency) {
+        if (err) {
+            console.log("Unable to find user to add currecy to.");
+            return;
+        }
+        let newcurrency = parseInt(currency) + parseInt(addcurrency);
+        newcurrency = newcurrency < 0 ? 0 : newcurrency;
+        db.changeCurrency(newcurrency, adduser, function (err, msg) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            client.say(channelName, msg);
+        })
+    });
+}
 
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
-    if (subwelcome && context.subscriber) {
+    if (context.subscriber && subwelcome) {
         playSubWelcomeSong(context);
     }
     if (msg.charAt(0) !== commandPrefix) {
@@ -444,7 +391,7 @@ function onMessageHandler(target, context, msg, self) {
 
         const command = knownCommands[commandName];
 
-        command(target, context, params);
+        command(target, context, params, client, channelName);
         console.log(`* Executed ${commandName} command for ${context.username}`);
     } else {
         console.log(`* Unknown command ${commandName} from ${context.username}`);
@@ -453,9 +400,7 @@ function onMessageHandler(target, context, msg, self) {
 
 client.on("message", onMessageHandler);
 
-
 let startTime;
-
 
 client.on("connected", function (address, port) {
     console.log("Address: " + address + " Port: " + port);

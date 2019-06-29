@@ -61,22 +61,22 @@ function time(target, context, params, client, channelname) {
 
 }
 
-function sub(target, context, params) {
-    client.say(channelName, "Enjoying the stream? Want your own song? Click here -> twitch.tv/products/milliebug_ or use Twitch Prime to sub for free!");
+function sub(target, context, params, client, channelname) {
+    client.say(channelname, "Enjoying the stream? Want your own song? Click here -> twitch.tv/products/milliebug_ or use Twitch Prime to sub for free!");
 }
 
-function follow(target, context, params) {
-    client.say(channelName, "Smash that follow button for a cookie <3");
+function follow(target, context, params, client, channelname) {
+    client.say(channelname, "Smash that follow button for a cookie <3");
 }
 
-function hype(target, context, params) {
-    client.say(channelName, "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
+function hype(target, context, params, client, channelname) {
+    client.say(channelname, "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
 }
 
-function lurk(target, context, params) {
-    client.say(channelName, "Lurk mode activated! Remember that when you mute a stream you do not count as a viewer! Please mute the tab or window instead - you rock!");
+function lurk(target, context, params, client, channelname) {
+    client.say(channelname, "Lurk mode activated! Remember that when you mute a stream you do not count as a viewer! Please mute the tab or window instead - you rock!");
 }
 
-function discord(target, context, params) {
-    client.say(channelName, "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
+function discord(target, context, params, client, channelname) {
+    client.say(channelname, "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
 }

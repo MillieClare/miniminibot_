@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\botinfo",
+    "\\botinfo\\creds",
     "\\botinfo\\quotes"
   ],
-  "SelectedNode": "\\basiccmds.js",
+  "SelectedNode": "\\botinfo\\creds\\config.xml",
   "PreviewInSolutionExplorer": false
 }

@@ -42,7 +42,7 @@ let knownCommands = {
     hi,
     uptime,
     howareyou,
-    raiod: bcmd.raid,
+    raid: bcmd.raid,
     focus: bcmd.focus,
     pb: bcmd.pb,
     zootr: bcmd.zootr,

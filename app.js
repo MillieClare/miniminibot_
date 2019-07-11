@@ -336,7 +336,7 @@ function checkminibux(target, context, params) {
 }
 
 function addbux(target, context, params) {
-    if (context.badges["broadcaster"] != 1) {
+    if (context.badges["broadcaster"] != 1 || !context.mod) {
         console.log(`${context.username} does not have permission to use this command`);
         return;
     }

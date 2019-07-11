@@ -56,6 +56,7 @@ let knownCommands = {
     sc,
     bux: checkminibux,
     addbux,
+    flip: usercoinbet,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
@@ -365,6 +366,53 @@ function addbux(target, context, params) {
             client.say(channelName, msg);
         })
     });
+}
+
+function usercoinbet(target, context, params) {
+    if (params.length < 2) {
+        client.say(channelName, "If you would like to earn bux from a coin flip please type EXAMPLE*!flip heads 50*");
+        return;
+    }
+    let outcomebet = params[0].toLowerCase();
+    let amountbet = params[1];
+    if (outcomebet != "heads" && outcomebet != "tails") {
+        client.say(channelName, `${context.username} ${outcomebet} is not a valid side of a coin. Please type heads or tails.`);
+        return;
+    }
+    if (isNaN(amountbet)) {
+        client.say(channelName, `${context.username} ${amountbet} is not a valid betting amount`);
+        return;
+    }
+    db.getCurrency(context.username, function (err, currency) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (amountbet > currency) {
+                client.say(channelName,`${context.username} you can't bet that amount`)
+            } else {
+                if (!flipcoin(outcomebet)) {
+                    client.say(channelName, `Unlucky ${context.username} you didn't guess correctly, better luck next time. You lose ${amountbet} bux.`);
+                    amountbet = -Math.abs(amountbet);
+                } else {
+                    client.say(channelName, `${context.username} congratulations you guessed right. You win ${amountbet} bux!`)
+                }
+                let newcurrency = parseInt(currency) + parseInt(amountbet);
+                db.changeCurrency(newcurrency, context.username, function (err, msg) {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+            }
+        }
+    });
+}
+
+function flipcoin(useroutcome) {
+    let coin = Math.floor(Math.random() * 2); //0 is tails 1 is heads
+    let cointext = coin === 1 ? "heads" : "tails";
+    let uoutcome = useroutcome === "heads" ? 1 : 0;
+    client.say(channelName, `The coin has been flipped and come out as....${cointext}`);
+    return uoutcome === coin;
 }
 
 function onMessageHandler(target, context, msg, self) {

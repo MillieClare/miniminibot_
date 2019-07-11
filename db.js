@@ -138,9 +138,9 @@ function addUserMiniBux(username, callback) {
     let sql = `INSERT INTO Currency (username, currency) VALUES (\"${username}\", 100)`;
     writeDBdata(sql, function (err, success) {
         if (err || !success) {
-            callback("User was not added to currency table");
+            callback(`${username} was not added to currency table`);
         } else {
-            callback("User was successfully added");
+            callback(`${username} was successfully added to currency table`);
         }
     })
 }

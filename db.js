@@ -7,6 +7,7 @@ module.exports = {
     addQuote,
     getCurrency,
     changeCurrency,
+    checkUser,
 };
 function getDB() {
     let db = new sqlite3.Database("mbdb.db", (err) => {
@@ -115,9 +116,33 @@ function addQuote(quote, username, callback) {
     writeDBdata(sql, function (err, success) {
         if (err || !success) {
             callback("Unable to add quote");
+        } else {
+            callback("Quote was added successfully");
         }
-        callback("Quote was added successfully");
     });
+}
+
+function checkUser(username, callback) {
+    getCurrency(username, function (err, rows) {
+        if (err) {
+            addUserMiniBux(username, function (err) {
+                callback(err);
+            });
+        } else {
+            callback(null);
+        }
+    });
+}
+
+function addUserMiniBux(username, callback) {
+    let sql = `INSERT INTO Currency (username, currency) VALUES (\"${username}\", 100)`;
+    writeDBdata(sql, function (err, success) {
+        if (err || !success) {
+            callback("User was not added to currency table");
+        } else {
+            callback("User was successfully added");
+        }
+    })
 }
 
 function getCurrency(username, callback) {

@@ -111,14 +111,14 @@ function getConfigSettings() {
     });
     db.getResponses("hi",function (err, data) {
         if (err) {
-            console.lof(err);
+            console.log(err);
             return;
         }
         hiresponses = data;
     });
     db.getResponses("howareyou", function (err, data) {
         if (err) {
-            console.lof(err);
+            console.log(err);
             return;
         }
         howareyouresponses = data;
@@ -374,6 +374,11 @@ function onMessageHandler(target, context, msg, self) {
     if (context.subscriber && subwelcome) {
         playSubWelcomeSong(context);
     }
+    db.checkUser(context.username, function (err) {
+        if (err) {
+            console.log(err);
+        }
+    });
     if (msg.charAt(0) !== commandPrefix) {
         console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`);
         return;

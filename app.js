@@ -43,6 +43,7 @@ let knownCommands = {
     uptime,
     howareyou,
     raid: bcmd.raid,
+    raiod: bcmd.raid,
     focus: bcmd.focus,
     pb: bcmd.pb,
     zootr: bcmd.zootr,

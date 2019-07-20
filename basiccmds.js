@@ -70,7 +70,7 @@ function follow(target, context, params, client, channelname) {
 }
 
 function hype(target, context, params, client, channelname) {
-    client.say(channelname, "TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity millie4Minihype TwitchUnity millie4Minihype MorphinTime millie4Minihype KAPOW millie4Minihype MorphinTime millie4Minihype TwitchUnity");
+    client.say(channelname, "TwitchUnity millie4Hype MorphinTime millie4Hype KAPOW millie4Hype MorphinTime millie4Hype TwitchUnity millie4Hype TwitchUnity millie4Hype MorphinTime millie4Hype KAPOW millie4Hype MorphinTime millie4Hype TwitchUnity");
 }
 
 function lurk(target, context, params, client, channelname) {

@@ -302,7 +302,7 @@ function quotes(target, context, params) {
 }
 
 function newquote(target, context, params) {
-    let quote = params.join(' ');
+    let quote = params.join(' ').replace(/['"]+/g,'\"\"');
     let username = context.username;
     db.addQuote(quote, username, function (msg) {
         client.say(channelName, msg);

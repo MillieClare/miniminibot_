@@ -113,6 +113,7 @@ function getResponses(type, callback) {
 
 function addQuote(quote, username, callback) {
     let sql = `INSERT INTO Responses (response, type, addedby) VALUES (\"${quote}\", \"quote\", \"${username}\")`;
+    console.log(sql);
     writeDBdata(sql, function (err, success) {
         if (err || !success) {
             callback("Unable to add quote");

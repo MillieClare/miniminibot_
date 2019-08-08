@@ -12,6 +12,8 @@ module.exports = {
     hype,
     lurk,
     discord,
+    newsub,
+    subperks,
 };
 
 function twitter(target, context, params, client, channelname) {
@@ -79,4 +81,17 @@ function lurk(target, context, params, client, channelname) {
 
 function discord(target, context, params, client, channelname) {
     client.say(channelname, "Wanna join my Discord family? Click here: https://discord.gg/E2zvvhn");
+}
+
+function newsub(target, context, params, client, channelname) {
+    client.say(channelname, "Thank you for subbing to the channel, it's very much appericated millie4Love millie4Hype millie4Cute. For a list of subperks that will be available, you can either use the command !subperks or view them in Milliebug's discord here: https://discord.gg/E2zvvhn");
+}
+
+function subperks(target, context, params, client, channelname) {
+    client.say(channelname, `${context.username} for subbing to Milliebug you get some wonderful perks:`);
+    client.say(channelname, `Access to some super cute emotes millie4Hype millie4Cute millie4Love`); //add more emotes later
+    client.say(channelname, `An amazing sub badge on twitch`);
+    client.say(channelname, `Special discord role and sub chat (https://discord.gg/E2zvvhn)`);
+    client.say(channelname, `Ability to play games with the amazing Milliebug herself`);
+    client.say(channelname, `and a special perk if you stay for 3 months: real sub BADGES and emote STICKERS`);
 }

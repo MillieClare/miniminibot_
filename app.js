@@ -58,6 +58,8 @@ let knownCommands = {
     bux: checkminibux,
     addbux,
     flip: usercoinbet,
+    newsub: bcmd.newsub,
+    subperks: bcmd.subperks,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
@@ -414,6 +416,11 @@ function flipcoin(useroutcome) {
     let uoutcome = useroutcome === "heads" ? 1 : 0;
     client.say(channelName, `The coin has been flipped and come out as....${cointext}`);
     return uoutcome === coin;
+}
+
+function theSteveProtocol() {
+    //add 7hours to current time and date
+    //print to chat when psyco_steve enters chat
 }
 
 function onMessageHandler(target, context, msg, self) {

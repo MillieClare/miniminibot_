@@ -49,7 +49,11 @@ let knownCommands = {
     zootr: bcmd.zootr,
     fanfare,
     quotes,
+    getquote: quotes,
+    quote: quotes,
     newquote,
+    addquote: newquote,
+    quotecount,
     giveawaystart,
     enter,
     giveawayend,
@@ -292,15 +296,39 @@ function howareyou(target, context, params) {
 }
 
 function quotes(target, context, params) {
+    db.getQuotes(function (err, data) {
+        if (err || !data) {
+            console.log("No quotes were found");
+            return;
+        } else {
+            //allow users to get specific quote using id number
+            let quoteNumber = Math.floor(Math.random() * data.length);
+            if (params.length > 0) {
+                if (!isNaN(params[0])) {
+                    params[0] > data.length ? quoteNumber = data.length : quoteNumber = params[0];
+                }
+            }
+            let outputmsg = `${data[quoteNumber][0]} (added by: ${data[quoteNumber][1]}`;
+            if (data[quoteNumber][2] !== null) {
+                outputmsg += ` ${data[quoteNumber][2]})`;
+            } else {
+                outputmsg += ')';
+            }
+            client.say(channelName, outputmsg);
+        }
+    });
+}
+
+function quotecount(target, context, params) {
+    //return the number of quotes in the database
     db.getResponses("quote", function (err, data) {
         if (err || !data) {
             console.log("No quotes were found");
             return;
         } else {
-            let quoteNumber = Math.floor(Math.random() * data.length);
-            client.say(channelName, data[quoteNumber]);
+            client.say(channelName, `There are ${data.length} quote(s) saved`);
         }
-    });
+    })
 }
 
 function newquote(target, context, params) {

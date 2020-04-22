@@ -4,6 +4,7 @@ module.exports = {
     getFanfares: getSoundList,
     getSublist: getSubList,
     getResponses: getResponses,
+    getQuotes,
     addQuote,
     getCurrency,
     changeCurrency,
@@ -111,8 +112,26 @@ function getResponses(type, callback) {
     });
 }
 
+function getQuotes(callback) {
+    //NEEDS TO BE TESTED
+    let sql = `SELECT response, addedby, dateadded FROM Responses WHERE type = \"quote\"`;
+    getDBdata(sql, function (err, rows) {
+        if (err) {
+            callback(err, null);
+        } else {
+            let tmp = [];
+            rows.forEach(function (row) {
+                tmp.push([row.response, row.addedby, row.dateadded]);
+            });
+            callback(null, tmp);
+        }
+    });
+}
+
 function addQuote(quote, username, callback) {
-    let sql = `INSERT INTO Responses (response, type, addedby) VALUES (\"${quote}\", \"quote\", \"${username}\")`;
+    let d = new Date();
+    let datestring = `${d.getDay()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+    let sql = `INSERT INTO Responses (response, type, addedby, dateadded) VALUES (\"${quote}\", \"quote\", \"${username}\", \"${datestring}\")`;
     console.log(sql);
     writeDBdata(sql, function (err, success) {
         if (err || !success) {

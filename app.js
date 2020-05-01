@@ -7,6 +7,7 @@ const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
 const db = require("./db.js");
 const bcmd = require("./basiccmds.js");
+const rickstream = require("./rickstream.js")
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
@@ -60,6 +61,8 @@ let knownCommands = {
     flip: usercoinbet,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
+    addPoints: rickstream.manualAddPoints,
+    getPoints: rickstream.getAmount,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
@@ -460,6 +463,11 @@ function onMessageHandler(target, context, msg, self) {
 }
 
 client.on("message", onMessageHandler);
+client.on("cheer", rickstream.addCheerAmount);
+client.on("subscription", rickstream.subscription);
+client.on("resub", rickstream.reSubscription);
+client.on("subgift", rickstream.subGift);
+client.on("submysterygift", rickstream.subBomb);
 
 let startTime;
 

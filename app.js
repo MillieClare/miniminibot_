@@ -466,7 +466,7 @@ client.on("message", onMessageHandler);
 client.on("cheer", rickstream.addCheerAmount);
 client.on("subscription", rickstream.subscription);
 client.on("resub", rickstream.reSubscription);
-client.on("subgift", rickstream.subGift);
+//client.on("subgift", rickstream.subGift);
 client.on("submysterygift", rickstream.subBomb);
 
 let startTime;

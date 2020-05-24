@@ -22,7 +22,7 @@ function twitter(target, context, params, client, channelname) {
 
 function raid(target, context, params, client, channelname) {
     client.say(channelname, "Sub message:");
-    client.say(channelname, "millie4Hype millie4Hype MINI RAID millie4Hype millie4Hype");
+    client.say(channelname, "millie4Hi  millie4Hi  Hello we have come to bug you! millie4Hi  millie4Hi ");
     client.say(channelname, "Non-sub message:");
     client.say(channelname, "PurpleStar PurpleStar MINI RAID PurpleStar PurpleStar");
 }

@@ -64,6 +64,7 @@ let knownCommands = {
     subperks: bcmd.subperks,
     addPoints: milestones.manualAddPoints,
     getPoints: rickstream.getAmount,
+    reset: milestones.resetMilestones,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file

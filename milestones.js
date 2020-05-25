@@ -10,6 +10,7 @@ module.exports = {
     subscription,
     reSubscription,
     loadPointValueOnStartUp,
+    resetMilestones,
 };
 
 let pointTracker = 0;
@@ -141,22 +142,9 @@ function reSubscription(channel, username, months, message, userstate, methods) 
     writeForStream();
 }
 
-// function checkTextFileExistsAndCreateIfDoesNot() {
-//     let fileName = './points.txt'
-//     let textInFile = `Total Points: ${pointTracker}\nNext Milestone: ${getMilestone()}`
-//     fs.writeFile(fileName, textInFile, function(error){
-//         if(error){
-//             throw new Error;
-//         } else {
-//             console.log('file created')
-//         }
-//     })
-// }
-
 const milestoneString = './.vs/miniminibot_/milestones/'
 
 function loadPointValueOnStartUp() {
-    // storeCurrentValue();
     fs.readFile(`${milestoneString}currentPoints.txt`, "utf8", (err, data) => {
         pointTracker = parseInt(data);
         return pointTracker;
@@ -188,5 +176,15 @@ function currentMilestone(pointTracker){
         return `Points Goal: ${pointTracker}/${milestone30}\nReward: ${reward30}`;
     } else {
         return `Points Goal: ${pointTracker}/${milestone15}\nReward: ${reward15}`;
+    }
+}
+// to be used by mods to reset pointsTracker
+function resetMilestones(target, context, params, client, channelName) {
+    if(context.mod || context.badges['broadcaster'] === '1'){
+        pointTracker = 0;
+        storeCurrentValue();
+        writeForStream();
+    } else {
+        client.say(channelName, `Sorry ${context.username} only mods can reset the point total!`);
     }
 }

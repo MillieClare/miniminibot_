@@ -7,7 +7,8 @@ const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
 const db = require("./db.js");
 const bcmd = require("./basiccmds.js");
-const rickstream = require("./rickstream.js")
+const rickstream = require("./rickstream.js");
+const milestones = require("./milestones.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
@@ -61,13 +62,14 @@ let knownCommands = {
     flip: usercoinbet,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
-    addPoints: rickstream.manualAddPoints,
+    addPoints: milestones.manualAddPoints,
     getPoints: rickstream.getAmount,
 };
 
 let commandPrefix = ""; //this variable can be set in the config xml file
 const client = new tmi.client(getConfigSettings());
 client.connect();
+
 
 function getXMLFileObject(filename) {
     if (!fs.existsSync(filename)) {
@@ -96,6 +98,9 @@ function getConfigSettings() {
         console.log("Unable to connected to database");
         process.exit();
     }
+
+    milestones.loadPointValueOnStartUp();
+
 
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);

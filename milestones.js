@@ -9,18 +9,25 @@ module.exports = {
     subBomb,
     subscription,
     reSubscription,
+    loadPointValueOnStartUp,
 };
 
 let pointTracker = 0;
-const tier1 = 600;
-const prime = 600;
-const tier2 = 1500;
-const tier3 = 3500;
+const tier1 = 500;
+const prime = 500;
+const tier2 = 1000;
+const tier3 = 1500;
+
+const milestone15 = 15000;
+const milestone30 = 30000;
+const reward15 = "'Spyro: YotD' stream";
+const reward30 = "OOT: JOTWAD";
+
 
 
 function getAmount(target, context, params, client, channelName){
     client.say(channelName, `Thanks ${context.username}, so far we have reached ${pointTracker} points!`);
-    checkTextFileExistsAndCreateIfDoesNot();
+    writeForStream();
     return pointTracker
 };
 
@@ -30,7 +37,8 @@ function manualAddPoints(target, context, params, client, channelName){
         if(!isNaN(checkAmount)) {
             pointTracker += checkAmount;
             client.say(channelName, `Thanks ${context.username}, I have added ${checkAmount} points to the tracker!`);
-            checkTextFileExistsAndCreateIfDoesNot();
+            storeCurrentValue();
+            writeForStream();
         } else {
             console.log('Can only add numbers to total');
             client.say(channelName, `Sorry ${context.username} I can only add numbers to the point total`);
@@ -43,7 +51,7 @@ function manualAddPoints(target, context, params, client, channelName){
 function addCheerAmount(channel, userState, message) {
     let bitsCheered = parseInt(userState.bits);
     pointTracker += bitsCheered;
-    checkTextFileExistsAndCreateIfDoesNot()
+    writeForStream();
     console.log(`Added ${bitsCheered} to total`)
     //client.say(channelName, `Thanks ${context.username} for cheering ${bitsCheered} bitties!, I have added ${bitsCheered} points to the tracker!`);
 }
@@ -52,7 +60,7 @@ function subGift(channel, username, streakMonths, recipient, methods, userstate)
     console.log(methods)
     if(methods.prime){
         pointTracker += prime;
-        checkTextFileExistsAndCreateIfDoesNot()
+        writeForStream();
         return
     }
     switch (methods.plan) {
@@ -70,26 +78,26 @@ function subGift(channel, username, streakMonths, recipient, methods, userstate)
         default:
             console.log('Cannot find the plan.', methods['plan']);
     }
-    checkTextFileExistsAndCreateIfDoesNot()
+    writeForStream();
 }
 
 function subBomb(channel, username, numbOfSubs, methods, userstate) {
     if(numbOfSubs >= 5){
         pointTracker += (tier1 + 100) * numbOfSubs;
-        checkTextFileExistsAndCreateIfDoesNot()
+        writeForStream();
         return
     } else {
         pointTracker += (numbOfSubs * tier1)
         console.log(`Mystery gift sub points added! points are now: ${pointTracker}`)
     }
-    checkTextFileExistsAndCreateIfDoesNot()
+    writeForStream();
 }
 
 function subscription(channel, username, methods, message, userstate) {
     console.log(methods)
     if(methods.prime){
         pointTracker += prime;
-        checkTextFileExistsAndCreateIfDoesNot()
+        writeForStream();
         return
     }
     switch (methods.plan) {
@@ -107,14 +115,14 @@ function subscription(channel, username, methods, message, userstate) {
         default:
             console.log('Cannot find the plan.', methods['plan']);
     }
-    checkTextFileExistsAndCreateIfDoesNot()
+    writeForStream();
 }
 
 function reSubscription(channel, username, months, message, userstate, methods) {
     console.log(methods)
     if(methods.prime){
         pointTracker += prime;
-        checkTextFileExistsAndCreateIfDoesNot()
+        writeForStream();
         return
     }
     switch (methods.plan) {
@@ -130,7 +138,7 @@ function reSubscription(channel, username, months, message, userstate, methods) 
         default:
             console.log('Cannot find the plan.', methods['plan']);
     }
-    checkTextFileExistsAndCreateIfDoesNot()
+    writeForStream();
 }
 
 // function checkTextFileExistsAndCreateIfDoesNot() {
@@ -145,20 +153,27 @@ function reSubscription(channel, username, months, message, userstate, methods) 
 //     })
 // }
 
-function getMilestone(){
+const milestoneString = './.vs/miniminibot_/milestones/'
 
+function loadPointValueOnStartUp() {
+    // storeCurrentValue();
+    fs.readFile(`${milestoneString}currentPoints.txt`, "utf8", (err, data) => {
+        pointTracker = parseInt(data);
+        return pointTracker;
+    });
+}
+
+function writeForStream() {
+    let textToDisplay = currentMilestone(pointTracker);
+    createTextFile('outputForObs.txt', textToDisplay);
 }
 
 function storeCurrentValue() {
     createTextFile('currentPoints.txt', `${pointTracker}`);
 }
 
-function currentMilestoneProgress() {
-    createTextFile('currentMilestoneName.txt')
-}
-
 function createTextFile(textFileName, textInFile){
-    let fileName = `./.vs/miniminibot_/milestones/${textFileName}.txt`
+    let fileName = `./.vs/miniminibot_/milestones/${textFileName}`
     fs.writeFile(fileName, textInFile, function(error){
         if(error){
             throw new Error;
@@ -168,10 +183,10 @@ function createTextFile(textFileName, textInFile){
     });
 }
 
-function writeForStream() {
-    createTextFile('outputForObs.txt', `Total Points: ${pointTracker}\nReward at: ${getMilestone()}`);
+function currentMilestone(pointTracker){
+    if(pointTracker > milestone15) {
+        return `Points Goal: ${pointTracker}/${milestone30}\nReward: ${reward30}`;
+    } else {
+        return `Points Goal: ${pointTracker}/${milestone15}\nReward: ${reward15}`;
+    }
 }
-
-// current value
-// current milestone progress
-// display on stream

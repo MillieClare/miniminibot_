@@ -100,8 +100,6 @@ function getConfigSettings() {
         process.exit();
     }
 
-    milestones.loadPointValueOnStartUp();
-
 
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);
@@ -468,20 +466,41 @@ function onMessageHandler(target, context, msg, self) {
     }
 }
 
+function onCheerHandler(channel, userState, message) {
+    //This function is used to handle what happens when users send bits to the channel
+    console.log(`${userState.username} has cheered ${userState.bits}`);
+    milestones.addCheerPoints(parseInt(userState.bits));
+}
+
+function onSubHandler(channel, username, months, methods, message, userstate) {
+    //This function is used to handle what happens when users sub to the channel
+}
+
+function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate, numbOfSubs) {
+    //This function is used to handle what happens when users gift subs to the channel
+}
+
 client.on("message", onMessageHandler);
-client.on("cheer", rickstream.addCheerAmount);
-client.on("subscription", rickstream.subscription);
-client.on("resub", rickstream.reSubscription);
+
+//NEW FUNCTION FOR HANDLEING STREAM EVENTS
+//bits
+client.on("cheer", onCheerHandler);
+//User subs
+client.on("subscription", onSubHandler);
+client.on("resub", onSubHandler);
+//Gifted subs
 //client.on("subgift", rickstream.subGift);
-client.on("submysterygift", rickstream.subBomb);
+client.on("submysterygift", onSubGiftHandler);
 
-let startTime;
+let startTime; //Is this still needed?
 
+
+//This may be the best place to place start up commands, needs to be explored more
 client.on("connected", function (address, port) {
     console.log("Address: " + address + " Port: " + port);
     startTime = new Date();
     console.log(startTime);
-
+    milestones.loadPointValueOnStartUp();
 });
 
 

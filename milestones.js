@@ -4,7 +4,7 @@ const fs = require("fs");
 module.exports = {
     getAmount,
     manualAddPoints,
-    addCheerAmount,
+    addCheerPoints,
     subGift,
     subBomb,
     subscription,
@@ -14,18 +14,21 @@ module.exports = {
 };
 
 let pointTracker = 0;
+
+//These values are current hard coded
+//TODO: look at having these load from an XML or DB
+const milestoneFolderPath = './botinfo/milestones/'
 const tier1 = 500;
 const prime = 500;
 const tier2 = 1000;
 const tier3 = 1500;
-
 const milestone15 = 15000;
 const milestone30 = 30000;
 const reward15 = "'Spyro: YotD' stream";
 const reward30 = "OOT: JOTWAD";
 
 
-
+//Dont think this function is needed
 function getAmount(target, context, params, client, channelName){
     client.say(channelName, `Thanks ${context.username}, so far we have reached ${pointTracker} points!`);
     writeForStream();
@@ -34,6 +37,7 @@ function getAmount(target, context, params, client, channelName){
 
 function manualAddPoints(target, context, params, client, channelName){
     let checkAmount = parseInt(params[0]);
+    console.log("HIT");
     if(context.mod || context.badges['broadcaster'] === '1'){
         if(!isNaN(checkAmount)) {
             pointTracker += checkAmount;
@@ -49,12 +53,10 @@ function manualAddPoints(target, context, params, client, channelName){
     }
 };
 
-function addCheerAmount(channel, userState, message) {
-    let bitsCheered = parseInt(userState.bits);
-    pointTracker += bitsCheered;
+function addCheerPoints(bits) {
+    pointTracker += bits;
     writeForStream();
-    console.log(`Added ${bitsCheered} to total`)
-    //client.say(channelName, `Thanks ${context.username} for cheering ${bitsCheered} bitties!, I have added ${bitsCheered} points to the tracker!`);
+    console.log(`Added ${bits} to total`)
 }
 
 function subGift(channel, username, streakMonths, recipient, methods, userstate) {
@@ -142,10 +144,12 @@ function reSubscription(channel, username, months, message, userstate, methods) 
     writeForStream();
 }
 
-const milestoneString = './.vs/miniminibot_/milestones/'
+
 
 function loadPointValueOnStartUp() {
-    fs.readFile(`${milestoneString}currentPoints.txt`, "utf8", (err, data) => {
+    fs.readFile(`${milestoneFolderPath}currentPoints.txt`, "utf8", (err, data) => {
+        if (err)
+            console.log(err);
         pointTracker = parseInt(data);
         return pointTracker;
     });
@@ -161,7 +165,7 @@ function storeCurrentValue() {
 }
 
 function createTextFile(textFileName, textInFile){
-    let fileName = `./.vs/miniminibot_/milestones/${textFileName}`
+    let fileName = `${milestoneFolderPath}${textFileName}`
     fs.writeFile(fileName, textInFile, function(error){
         if(error){
             throw new Error;

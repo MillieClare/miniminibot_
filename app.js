@@ -63,9 +63,11 @@ let knownCommands = {
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
     addPoints: milestones.manualAddPoints,
-    getPoints: rickstream.getAmount,
+    getPoints: milestones.getAmount,
     reset: milestones.resetMilestones,
 };
+
+//TODO: Might be worth spliting this list into Normal commands and Mod commands
 
 let commandPrefix = ""; //this variable can be set in the config xml file
 const client = new tmi.client(getConfigSettings());
@@ -425,18 +427,15 @@ function flipcoin(useroutcome) {
     return uoutcome === coin;
 }
 
-function theSteveProtocol() {
-    //add 7hours to current time and date
-    //print to chat when psyco_steve enters chat
-}
-
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
+    //TODO: Remove
     if (context.subscriber && subwelcome) {
         playSubWelcomeSong(context);
     }
+    //TODO: Remove
     db.checkUser(context.username, function (err) {
         if (err) {
             console.log(err);
@@ -472,12 +471,34 @@ function onCheerHandler(channel, userState, message) {
     milestones.addCheerPoints(parseInt(userState.bits));
 }
 
-function onSubHandler(channel, username, months, methods, message, userstate) {
+function onSubHandler(channel, username, methods, message, userstate) {
     //This function is used to handle what happens when users sub to the channel
+    let outputMsg = ``;
+    if (methods.prime) {
+        outputMsg = `${userstate.username} has subbed using method PRIME`;
+    } else {
+        outputMsg = `${ userstate.username } has subbed using method ${ methods.plan }`;
+    }
+    console.log(outputMsg);
+    subCalculation(methods.prime, methods.plan);
 }
 
-function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate, numbOfSubs) {
+function onReSubHandler(channel, username, months, message, userstate, methods) {
+    //This function is used to handle what happens when users resub to the channel
+    let outputMsg = ``;
+    if (methods.prime) {
+        outputMsg = `${userstate.username} has resubbed using method PRIME`;
+    } else {
+        outputMsg = `${userstate.username} has resubbed using method ${methods.plan}`;
+    }
+    console.log(outputMsg);
+    subCalculation(methods.prime, methods.plan);
+}
+
+function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate) {
     //This function is used to handle what happens when users gift subs to the channel
+    console.log(`${userstate.username} has gifted a sub to ${recipient} using method ${methods.plan}`);
+    milestones.subCalculation(methods.prime, methods.plan);
 }
 
 client.on("message", onMessageHandler);
@@ -487,10 +508,14 @@ client.on("message", onMessageHandler);
 client.on("cheer", onCheerHandler);
 //User subs
 client.on("subscription", onSubHandler);
-client.on("resub", onSubHandler);
+client.on("resub", onReSubHandler);
 //Gifted subs
-//client.on("subgift", rickstream.subGift);
-client.on("submysterygift", onSubGiftHandler);
+client.on("subgift", onSubGiftHandler);
+
+//This client on function is no longer needed unless points need to
+//be calculated differently based on amount gifted
+//client.on("submysterygift", onSubGiftHandler);
+
 
 let startTime; //Is this still needed?
 

@@ -5,12 +5,9 @@ module.exports = {
     getAmount,
     manualAddPoints,
     addCheerPoints,
-    subGift,
-    subBomb,
-    subscription,
-    reSubscription,
     loadPointValueOnStartUp,
     resetMilestones,
+    subCalculation,
 };
 
 let pointTracker = 0;
@@ -35,9 +32,9 @@ function getAmount(target, context, params, client, channelName){
     return pointTracker
 };
 
+//TODO: Would it be better to have a Set points command as well?
 function manualAddPoints(target, context, params, client, channelName){
     let checkAmount = parseInt(params[0]);
-    console.log("HIT");
     if(context.mod || context.badges['broadcaster'] === '1'){
         if(!isNaN(checkAmount)) {
             pointTracker += checkAmount;
@@ -59,92 +56,26 @@ function addCheerPoints(bits) {
     console.log(`Added ${bits} to total`)
 }
 
-function subGift(channel, username, streakMonths, recipient, methods, userstate) {
-    console.log(methods)
-    if(methods.prime){
+function subCalculation(isPrime, method) {
+    if (isPrime) {
         pointTracker += prime;
-        writeForStream();
-        return
-    }
-    switch (methods.plan) {
-        case '1000':
-            pointTracker += tier1;
-            //console.log(`Given a gift sub to ${recipient} from ${username}, they have subbed for ${streakMonths}, 
-            //the new point total is now ${pointTracker} -----> channel = ${channel}, userstate = ${userstate}`)
-            break;
-        case '2000':
-            pointTracker += tier2;
-            break;
-        case '3000':
-            pointTracker += tier3;
-            break;
-        default:
-            console.log('Cannot find the plan.', methods['plan']);
-    }
-    writeForStream();
-}
-
-function subBomb(channel, username, numbOfSubs, methods, userstate) {
-    if(numbOfSubs >= 5){
-        pointTracker += (tier1 + 100) * numbOfSubs;
-        writeForStream();
-        return
     } else {
-        pointTracker += (numbOfSubs * tier1)
-        console.log(`Mystery gift sub points added! points are now: ${pointTracker}`)
+        switch (method) {
+            case '1000':
+                pointTracker += tier1;
+                break;
+            case '2000':
+                pointTracker += tier2;
+                break;
+            case '3000':
+                pointTracker += tier3;
+                break;
+            default:
+                console.log('Cannot find the plan.', method);
+        }
     }
     writeForStream();
 }
-
-function subscription(channel, username, methods, message, userstate) {
-    console.log(methods)
-    if(methods.prime){
-        pointTracker += prime;
-        writeForStream();
-        return
-    }
-    switch (methods.plan) {
-        case '1000':
-            pointTracker += tier1;
-            console.log(`Given a gift sub to ${recipient} from ${username}, they have subbed for ${streakMonths}, 
-            the new point total is now ${pointTracker} -----> channel = ${channel}, userstate = ${userstate}`)
-            break;
-        case '2000':
-            pointTracker += tier2;
-            break;
-        case '3000':
-            pointTracker += tier3;
-            break;
-        default:
-            console.log('Cannot find the plan.', methods['plan']);
-    }
-    writeForStream();
-}
-
-function reSubscription(channel, username, months, message, userstate, methods) {
-    console.log(methods)
-    if(methods.prime){
-        pointTracker += prime;
-        writeForStream();
-        return
-    }
-    switch (methods.plan) {
-        case '1000':
-            pointTracker += tier1;
-            break;
-        case '2000':
-            pointTracker += tier2;
-            break;
-        case '3000':
-            pointTracker += tier3;
-            break;
-        default:
-            console.log('Cannot find the plan.', methods['plan']);
-    }
-    writeForStream();
-}
-
-
 
 function loadPointValueOnStartUp() {
     fs.readFile(`${milestoneFolderPath}currentPoints.txt`, "utf8", (err, data) => {

@@ -42,7 +42,6 @@ let knownCommands = {
     lurk: bcmd.lurk,
     discord: bcmd.discord,
     hi,
-    uptime,
     howareyou,
     raid: bcmd.raid,
     raiod: bcmd.raid,
@@ -53,9 +52,6 @@ let knownCommands = {
     quotes,
     newquote,
     sc,
-    bux: checkminibux,
-    addbux,
-    flip: usercoinbet,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
     addPoints: milestones.manualAddPoints,
@@ -260,113 +256,6 @@ function newquote(target, context, params) {
     });
 }
 
-function uptime(target, context, params) {
-    let currentTime = new Date();
-    let timeDifference = currentTime.getTime() - startTime.getTime();
-    console.log(timeDifference);
-
-    let hours = Math.floor(timeDifference / (1000 * 60 * 60));
-    let minutes = Math.floor(timeDifference / (1000 * 60)) % 60;
-    let seconds = Math.floor(timeDifference / 1000) % 60;
-
-    let hoursWord = (hours === 1) ? 'hour' : 'hours';
-    let minutesWord = (minutes === 1) ? 'minute' : 'minutes';
-    let secondsWord = (seconds === 1) ? 'second' : 'seconds';
-
-    client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
-
-}
-
-function checkminibux(target, context, params) {
-    db.getCurrency(context.username, function (err, currency) {
-        if (err) {
-            console.log(err);
-        } else {
-            client.say(channelName, `${context.username} you have ${currency} minibux`)
-        }
-    });
-}
-
-function addbux(target, context, params) {
-    if (context.badges["broadcaster"] != 1 || !context.mod) {
-        console.log(`${context.username} does not have permission to use this command`);
-        return;
-    }
-    if (params.length < 2) {
-        console.log("Incorroect parameters.");
-        console.log("EXAMPLE: !addbux usernmae 100");
-        return;
-    }
-    let adduser = params[0].replace('@', '').toLowerCase();
-    let addcurrency = params[1];
-    if (isNaN(addcurrency)) {
-        console.log(`${addcurrency} is not a valid currency value`);
-        return;
-    }
-    db.getCurrency(adduser, function (err, currency) {
-        if (err) {
-            console.log("Unable to find user to add currecy to.");
-            return;
-        }
-        let newcurrency = parseInt(currency) + parseInt(addcurrency);
-        newcurrency = newcurrency < 0 ? 0 : newcurrency;
-        db.changeCurrency(newcurrency, adduser, function (err, msg) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            client.say(channelName, msg);
-        })
-    });
-}
-
-function usercoinbet(target, context, params) {
-    if (params.length < 2) {
-        client.say(channelName, "If you would like to earn bux from a coin flip please type EXAMPLE*!flip heads 50*");
-        return;
-    }
-    let outcomebet = params[0].toLowerCase();
-    let amountbet = params[1];
-    if (outcomebet != "heads" && outcomebet != "tails") {
-        client.say(channelName, `${context.username} ${outcomebet} is not a valid side of a coin. Please type heads or tails.`);
-        return;
-    }
-    if (isNaN(amountbet)) {
-        client.say(channelName, `${context.username} ${amountbet} is not a valid betting amount`);
-        return;
-    }
-    db.getCurrency(context.username, function (err, currency) {
-        if (err) {
-            console.log(err);
-        } else {
-            if (amountbet > currency) {
-                client.say(channelName,`${context.username} you can't bet that amount`)
-            } else {
-                if (!flipcoin(outcomebet)) {
-                    client.say(channelName, `Unlucky ${context.username} you didn't guess correctly, better luck next time. You lose ${amountbet} bux.`);
-                    amountbet = -Math.abs(amountbet);
-                } else {
-                    client.say(channelName, `${context.username} congratulations you guessed right. You win ${amountbet} bux!`)
-                }
-                let newcurrency = parseInt(currency) + parseInt(amountbet);
-                db.changeCurrency(newcurrency, context.username, function (err, msg) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            }
-        }
-    });
-}
-
-function flipcoin(useroutcome) {
-    let coin = Math.floor(Math.random() * 2); //0 is tails 1 is heads
-    let cointext = coin === 1 ? "heads" : "tails";
-    let uoutcome = useroutcome === "heads" ? 1 : 0;
-    client.say(channelName, `The coin has been flipped and come out as....${cointext}`);
-    return uoutcome === coin;
-}
-
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
@@ -457,14 +346,9 @@ client.on("subgift", onSubGiftHandler);
 //client.on("submysterygift", onSubGiftHandler);
 
 
-let startTime; //Is this still needed?
-
-
 //This may be the best place to place start up commands, needs to be explored more
 client.on("connected", function (address, port) {
     console.log("Address: " + address + " Port: " + port);
-    startTime = new Date();
-    console.log(startTime);
     milestones.loadPointValueOnStartUp();
 });
 

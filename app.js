@@ -480,7 +480,7 @@ function onSubHandler(channel, username, methods, message, userstate) {
         outputMsg = `${ userstate.username } has subbed using method ${ methods.plan }`;
     }
     console.log(outputMsg);
-    subCalculation(methods.prime, methods.plan);
+    milestones.subCalculation(methods.prime, methods.plan);
 }
 
 function onReSubHandler(channel, username, months, message, userstate, methods) {
@@ -492,7 +492,7 @@ function onReSubHandler(channel, username, months, message, userstate, methods) 
         outputMsg = `${userstate.username} has resubbed using method ${methods.plan}`;
     }
     console.log(outputMsg);
-    subCalculation(methods.prime, methods.plan);
+    milestones.subCalculation(methods.prime, methods.plan);
 }
 
 function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate) {

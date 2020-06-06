@@ -78,6 +78,9 @@ function subCalculation(isPrime, method) {
 }
 
 function loadPointValueOnStartUp() {
+    if(!checkIfPointsAreSavedAlready(`${milestoneFolderPath}currentPoints.txt`)){
+        createTextFile('currentPoints.txt', pointTracker);
+    }
     fs.readFile(`${milestoneFolderPath}currentPoints.txt`, "utf8", (err, data) => {
         if (err)
             console.log(err);
@@ -121,5 +124,15 @@ function resetMilestones(target, context, params, client, channelName) {
         writeForStream();
     } else {
         client.say(channelName, `Sorry ${context.username} only mods can reset the point total!`);
+    }
+}
+
+function checkIfPointsAreSavedAlready(path) {
+    try {
+        if (fs.existsSync(path)) {
+            return true;
+        }
+    } catch (err) {
+        return false;
     }
 }

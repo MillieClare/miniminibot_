@@ -7,7 +7,8 @@ const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
 const db = require("./db.js");
 const bcmd = require("./basiccmds.js");
-const rickstream = require("./rickstream.js")
+const rickstream = require("./rickstream.js");
+const milestones = require("./milestones.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
@@ -61,13 +62,17 @@ let knownCommands = {
     flip: usercoinbet,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
-    addPoints: rickstream.manualAddPoints,
-    getPoints: rickstream.getAmount,
+    addPoints: milestones.manualAddPoints,
+    getPoints: milestones.getAmount,
+    reset: milestones.resetMilestones,
 };
+
+//TODO: Might be worth spliting this list into Normal commands and Mod commands
 
 let commandPrefix = ""; //this variable can be set in the config xml file
 const client = new tmi.client(getConfigSettings());
 client.connect();
+
 
 function getXMLFileObject(filename) {
     if (!fs.existsSync(filename)) {
@@ -96,6 +101,7 @@ function getConfigSettings() {
         console.log("Unable to connected to database");
         process.exit();
     }
+
 
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);
@@ -421,18 +427,15 @@ function flipcoin(useroutcome) {
     return uoutcome === coin;
 }
 
-function theSteveProtocol() {
-    //add 7hours to current time and date
-    //print to chat when psyco_steve enters chat
-}
-
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
+    //TODO: Remove
     if (context.subscriber && subwelcome) {
         playSubWelcomeSong(context);
     }
+    //TODO: Remove
     db.checkUser(context.username, function (err) {
         if (err) {
             console.log(err);
@@ -462,20 +465,67 @@ function onMessageHandler(target, context, msg, self) {
     }
 }
 
+function onCheerHandler(channel, userState, message) {
+    //This function is used to handle what happens when users send bits to the channel
+    console.log(`${userState.username} has cheered ${userState.bits}`);
+    milestones.addCheerPoints(parseInt(userState.bits));
+}
+
+function onSubHandler(channel, username, methods, message, userstate) {
+    //This function is used to handle what happens when users sub to the channel
+    let outputMsg = ``;
+    if (methods.prime) {
+        outputMsg = `${userstate.username} has subbed using method PRIME`;
+    } else {
+        outputMsg = `${ userstate.username } has subbed using method ${ methods.plan }`;
+    }
+    console.log(outputMsg);
+    milestones.subCalculation(methods.prime, methods.plan);
+}
+
+function onReSubHandler(channel, username, months, message, userstate, methods) {
+    //This function is used to handle what happens when users resub to the channel
+    let outputMsg = ``;
+    if (methods.prime) {
+        outputMsg = `${userstate.username} has resubbed using method PRIME`;
+    } else {
+        outputMsg = `${userstate.username} has resubbed using method ${methods.plan}`;
+    }
+    console.log(outputMsg);
+    milestones.subCalculation(methods.prime, methods.plan);
+}
+
+function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate) {
+    //This function is used to handle what happens when users gift subs to the channel
+    console.log(`${userstate.username} has gifted a sub to ${recipient} using method ${methods.plan}`);
+    milestones.subCalculation(methods.prime, methods.plan);
+}
+
 client.on("message", onMessageHandler);
-client.on("cheer", rickstream.addCheerAmount);
-client.on("subscription", rickstream.subscription);
-client.on("resub", rickstream.reSubscription);
-//client.on("subgift", rickstream.subGift);
-client.on("submysterygift", rickstream.subBomb);
 
-let startTime;
+//NEW FUNCTION FOR HANDLEING STREAM EVENTS
+//bits
+client.on("cheer", onCheerHandler);
+//User subs
+client.on("subscription", onSubHandler);
+client.on("resub", onReSubHandler);
+//Gifted subs
+client.on("subgift", onSubGiftHandler);
 
+//This client on function is no longer needed unless points need to
+//be calculated differently based on amount gifted
+//client.on("submysterygift", onSubGiftHandler);
+
+
+let startTime; //Is this still needed?
+
+
+//This may be the best place to place start up commands, needs to be explored more
 client.on("connected", function (address, port) {
     console.log("Address: " + address + " Port: " + port);
     startTime = new Date();
     console.log(startTime);
-
+    milestones.loadPointValueOnStartUp();
 });
 
 

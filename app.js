@@ -52,10 +52,6 @@ let knownCommands = {
     fanfare,
     quotes,
     newquote,
-    giveawaystart,
-    enter,
-    giveawayend,
-    decidewinner,
     sc,
     bux: checkminibux,
     addbux,
@@ -230,62 +226,6 @@ function sc(target, context, params) {
             soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
         }
     });
-}
-
-function giveawaystart(target, context, params) {
-    if (!context.mod || context.badges["broadcaster"] != 1) {
-        console.log(`${context.username} tried to start a giveaway but is not a mod`)
-        return;
-    }
-    giveawayentrylist = [];
-    giveawayopen = true;
-    client.say(channelName, "The Milliebug giveaway has begun. If you would like to enter please type !enter");
-}
-
-function enter(target, context, params) {
-    if (!giveawayopen) {
-        console.log("There is no giveaway live right now.")
-        return;
-    }
-    if (checkuserentry(context.username)) {
-        console.log(`${context.username} has already entered the giveaway`)
-        return;
-    }
-    let numEnteries = context.subscriber ? giveawaysubenteries : giveawaydefaultenteries;
-    for (let i = 0; i < numEnteries; i++) {
-        giveawayentrylist.push(context.username);
-    }
-    console.log(`${context.username} has enter the giveaway ${numEnteries} time(s)`);
-}
-
-function checkuserentry(username) {
-    for (let i = 0; i < giveawayentrylist.length; i++) {
-        if (giveawayentrylist[i] === username) { return true; }
-    }
-    return false;
-}
-
-function giveawayend(target, context, params) {
-    if (!context.mod || context.badges["broadcaster"] != 1) {
-        console.log(`${context.username} tried to end a giveaway but is not a mod`)
-        return;
-    }
-    giveawayopen = false;
-    client.say(channelName, "The Milliebug giveaway has ended. The winner will be drawn soon. Good luck to everyone! millie4Hype");
-}
-
-function decidewinner(target, context, params) {
-    if (!context.mod || context.badges["broadcaster"] != 1) {
-        console.log(`${context.username} tried to decide the winner of the giveaway but is not a mod`)
-        return;
-    }
-    if (giveawayopen || giveawayentrylist.length < 1) {
-        console.log("Giveaway is still open or there are no enteries, a winner can not be decided.");
-        return;
-    }
-    let winnernumber = Math.floor(Math.random() * giveawayentrylist.length);
-    client.say(channelName, "The winner of the giveaway is......");
-    client.say(channelName, `millie4Hype ${giveawayentrylist[winnernumber]} millie4Hype CONGRATULATIONS millie4Hype`)
 }
 
 function hi(target, context, params) {

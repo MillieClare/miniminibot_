@@ -7,7 +7,6 @@ const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
 const db = require("./db.js");
 const bcmd = require("./basiccmds.js");
-const rickstream = require("./rickstream.js");
 const milestones = require("./milestones.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
@@ -23,14 +22,6 @@ let soundcooldown = new Date(); //set cooldown to date type
 let subwelcome = false; //this variable can be set in the config xml file
 let sublist = [];
 
-let giveawayentrylist = [];
-let giveawayopen = false;
-let giveawaysubenteries = 0; //this variable can be set in the config xml file
-let giveawaydefaultenteries = 0; //this variable can be set in the config xml file
-
-let hiresponses = [];
-let howareyouresponses = [];
-
 let knownCommands = {
     twitter: bcmd.twitter,
     commands: bcmd.commands,
@@ -41,8 +32,6 @@ let knownCommands = {
     hype: bcmd.hype,
     lurk: bcmd.lurk,
     discord: bcmd.discord,
-    hi,
-    howareyou,
     raid: bcmd.raid,
     raiod: bcmd.raid,
     focus: bcmd.focus,
@@ -113,20 +102,6 @@ function getConfigSettings() {
             return;
         }
         sublist = data;
-    });
-    db.getResponses("hi",function (err, data) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        hiresponses = data;
-    });
-    db.getResponses("howareyou", function (err, data) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        howareyouresponses = data;
     });
     //end of db data
 
@@ -224,18 +199,6 @@ function sc(target, context, params) {
     });
 }
 
-function hi(target, context, params) {
-    let responseNumber = Math.floor(Math.random() * hiresponses.length);
-    let response = hiresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
-    client.say(channelName, response);
-}
-
-function howareyou(target, context, params) {
-    let responseNumber = Math.floor(Math.random() * howareyouresponses.length);
-    let response = howareyouresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
-    client.say(channelName, response);
-}
-
 function quotes(target, context, params) {
     db.getResponses("quote", function (err, data) {
         if (err || !data) {
@@ -260,16 +223,6 @@ function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
-    //TODO: Remove
-    if (context.subscriber && subwelcome) {
-        playSubWelcomeSong(context);
-    }
-    //TODO: Remove
-    db.checkUser(context.username, function (err) {
-        if (err) {
-            console.log(err);
-        }
-    });
     if (msg.charAt(0) !== commandPrefix) {
         console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`);
         return;

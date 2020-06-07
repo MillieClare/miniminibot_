@@ -166,25 +166,25 @@ function sc(target, context, params) {
 }
 //END OF TODO
 //TODO: Redesign these functions
-function quotes(target, context, params) {
-    db.getResponses("quote", function (err, data) {
-        if (err || !data) {
-            console.log("No quotes were found");
-            return;
-        } else {
-            let quoteNumber = Math.floor(Math.random() * data.length);
-            client.say(channelName, data[quoteNumber]);
-        }
-    });
-}
+//function quotes(target, context, params) {
+//    db.getResponses("quote", function (err, data) {
+//        if (err || !data) {
+//            console.log("No quotes were found");
+//            return;
+//        } else {
+//            let quoteNumber = Math.floor(Math.random() * data.length);
+//            client.say(channelName, data[quoteNumber]);
+//        }
+//    });
+//}
 
-function newquote(target, context, params) {
-    let quote = params.join(' ').replace(/['"]+/g,'\"\"');
-    let username = context.username;
-    db.addQuote(quote, username, function (msg) {
-        client.say(channelName, msg);
-    });
-}
+//function newquote(target, context, params) {
+//    let quote = params.join(' ').replace(/['"]+/g,'\"\"');
+//    let username = context.username;
+//    db.addQuote(quote, username, function (msg) {
+//        client.say(channelName, msg);
+//    });
+//}
 //END OF TODO
 function onMessageHandler(target, context, msg, self) {
     if (self) {

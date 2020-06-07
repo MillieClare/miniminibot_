@@ -1,4 +1,9 @@
 ﻿const sqlite3 = require("sqlite3").verbose();
+
+
+//TODO: This whole file needs to be redesigned
+//TODO: These functions may not be needed until a DB is located on a server
+
 module.exports = {
     dbCheck: dbCheck,
     getFanfares: getSoundList,

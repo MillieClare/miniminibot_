@@ -221,9 +221,9 @@ function onSubHandler(channel, username, methods, message, userstate) {
     //This function is used to handle what happens when users sub to the channel
     let outputMsg = ``;
     if (methods.prime) {
-        outputMsg = `${userstate.username} has subbed using method PRIME`;
+        outputMsg = `${username} has subbed using method PRIME`;
     } else {
-        outputMsg = `${ userstate.username } has subbed using method ${ methods.plan }`;
+        outputMsg = `${ username } has subbed using method ${ methods.plan }`;
     }
     console.log(outputMsg);
     milestones.subCalculation(methods.prime, methods.plan);
@@ -233,9 +233,9 @@ function onReSubHandler(channel, username, months, message, userstate, methods) 
     //This function is used to handle what happens when users resub to the channel
     let outputMsg = ``;
     if (methods.prime) {
-        outputMsg = `${userstate.username} has resubbed using method PRIME`;
+        outputMsg = `${username} has resubbed using method PRIME`;
     } else {
-        outputMsg = `${userstate.username} has resubbed using method ${methods.plan}`;
+        outputMsg = `${username} has resubbed using method ${methods.plan}`;
     }
     console.log(outputMsg);
     milestones.subCalculation(methods.prime, methods.plan);
@@ -243,7 +243,7 @@ function onReSubHandler(channel, username, months, message, userstate, methods) 
 
 function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate) {
     //This function is used to handle what happens when users gift subs to the channel
-    console.log(`${userstate.username} has gifted a sub to ${recipient} using method ${methods.plan}`);
+    console.log(`${username} has gifted a sub to ${recipient} using method ${methods.plan}`);
     milestones.subCalculation(methods.prime, methods.plan);
 }
 

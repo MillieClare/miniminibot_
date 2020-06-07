@@ -19,8 +19,6 @@ const soundspath = path.join(__dirname, "sounds"); //the base location for all s
 let soundcooldownseconds = 0; //this variable can be set in the config xml file
 let soundcooldown = new Date(); //set cooldown to date type
 
-let subwelcome = false; //this variable can be set in the config xml file
-let sublist = [];
 
 let knownCommands = {
     twitter: bcmd.twitter,
@@ -76,13 +74,9 @@ function playSound(filename) {
     });
 }
 
+//TODO: Move these functions to own module
 //moved settings to xml file, new function should contruct options for tmi
 function getConfigSettings() {
-    if (!db.dbCheck) {
-        console.log("Unable to connected to database");
-        process.exit();
-    }
-
 
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);
@@ -95,15 +89,6 @@ function getConfigSettings() {
     giveawaydefaultenteries = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]) ? 1 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]));
     channelName = xmlfile["config"]["bot"][0]["info"][0]["channelname"][0];
     //end of global settings
-    //db data
-    db.getSublist(function (err, data) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        sublist = data;
-    });
-    //end of db data
 
     let options = {
         options: {
@@ -121,26 +106,7 @@ function getConfigSettings() {
     };
     return options;
 }
-
-function playSubWelcomeSong(context) {
-    let filepath = path.join(soundspath, "subwelcome");
-    //check if in sublist
-    if (context.username in sublist) {
-        if (sublist[context.username]["welcomed"]) { return; }
-        filepath = path.join(filepath,sublist[context.username]["welcomesong"]);
-        sublist[context.username]["welcomed"] = true;
-        playSound(filepath);
-        return;
-    }
-    //if not in sub list play default and add to sub list
-    filepath = path.join(filepath, "default.mp3");
-    sublist[context.username] = {
-        welcomesong: "default.mp3",
-        welcomed: true,
-    };
-    playSound(filepath);
-}
-
+//TODO: Move sound commands to own module
 function soundsCoolDownCheck() {
     /// <summary> Checks whether the cooldown for sounds has expired, this will stop sound spam. </summary>
     /// <returns type="Bool"> On cooldown or not </returns>
@@ -198,7 +164,8 @@ function sc(target, context, params) {
         }
     });
 }
-
+//END OF TODO
+//TODO: Redesign these functions
 function quotes(target, context, params) {
     db.getResponses("quote", function (err, data) {
         if (err || !data) {
@@ -218,7 +185,7 @@ function newquote(target, context, params) {
         client.say(channelName, msg);
     });
 }
-
+//END OF TODO
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;

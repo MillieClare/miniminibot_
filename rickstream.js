@@ -119,8 +119,6 @@ function reSubscription(channel, username, months, message, userstate, methods) 
     switch (methods.plan) {
         case '1000':
             pointTracker += tier1;
-            console.log(`Given a gift sub to ${recipient} from ${username}, they have subbed for ${streakMonths}, 
-            the new point total is now ${pointTracker} -----> channel = ${channel}, userstate = ${userstate}`)
             break;
         case '2000':
             pointTracker += tier2;

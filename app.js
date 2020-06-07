@@ -7,7 +7,8 @@ const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
 const db = require("./db.js");
 const bcmd = require("./basiccmds.js");
-const rickstream = require("./rickstream.js")
+const rickstream = require("./rickstream.js");
+const milestones = require("./milestones.js");
 
 let parser = new xml2js.Parser({ attrkey: "ATTR" });
 
@@ -41,7 +42,6 @@ let knownCommands = {
     lurk: bcmd.lurk,
     discord: bcmd.discord,
     hi,
-    uptime,
     howareyou,
     raid: bcmd.raid,
     raiod: bcmd.raid,
@@ -51,23 +51,20 @@ let knownCommands = {
     fanfare,
     quotes,
     newquote,
-    giveawaystart,
-    enter,
-    giveawayend,
-    decidewinner,
     sc,
-    bux: checkminibux,
-    addbux,
-    flip: usercoinbet,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
-    addPoints: rickstream.manualAddPoints,
-    getPoints: rickstream.getAmount,
+    addPoints: milestones.manualAddPoints,
+    getPoints: milestones.getAmount,
+    reset: milestones.resetMilestones,
 };
+
+//TODO: Might be worth spliting this list into Normal commands and Mod commands
 
 let commandPrefix = ""; //this variable can be set in the config xml file
 const client = new tmi.client(getConfigSettings());
 client.connect();
+
 
 function getXMLFileObject(filename) {
     if (!fs.existsSync(filename)) {
@@ -96,6 +93,7 @@ function getConfigSettings() {
         console.log("Unable to connected to database");
         process.exit();
     }
+
 
     let filename = path.join(botinfopath, "creds", "config.xml");
     let xmlfile = getXMLFileObject(filename);
@@ -226,62 +224,6 @@ function sc(target, context, params) {
     });
 }
 
-function giveawaystart(target, context, params) {
-    if (!context.mod || context.badges["broadcaster"] != 1) {
-        console.log(`${context.username} tried to start a giveaway but is not a mod`)
-        return;
-    }
-    giveawayentrylist = [];
-    giveawayopen = true;
-    client.say(channelName, "The Milliebug giveaway has begun. If you would like to enter please type !enter");
-}
-
-function enter(target, context, params) {
-    if (!giveawayopen) {
-        console.log("There is no giveaway live right now.")
-        return;
-    }
-    if (checkuserentry(context.username)) {
-        console.log(`${context.username} has already entered the giveaway`)
-        return;
-    }
-    let numEnteries = context.subscriber ? giveawaysubenteries : giveawaydefaultenteries;
-    for (let i = 0; i < numEnteries; i++) {
-        giveawayentrylist.push(context.username);
-    }
-    console.log(`${context.username} has enter the giveaway ${numEnteries} time(s)`);
-}
-
-function checkuserentry(username) {
-    for (let i = 0; i < giveawayentrylist.length; i++) {
-        if (giveawayentrylist[i] === username) { return true; }
-    }
-    return false;
-}
-
-function giveawayend(target, context, params) {
-    if (!context.mod || context.badges["broadcaster"] != 1) {
-        console.log(`${context.username} tried to end a giveaway but is not a mod`)
-        return;
-    }
-    giveawayopen = false;
-    client.say(channelName, "The Milliebug giveaway has ended. The winner will be drawn soon. Good luck to everyone! millie4Hype");
-}
-
-function decidewinner(target, context, params) {
-    if (!context.mod || context.badges["broadcaster"] != 1) {
-        console.log(`${context.username} tried to decide the winner of the giveaway but is not a mod`)
-        return;
-    }
-    if (giveawayopen || giveawayentrylist.length < 1) {
-        console.log("Giveaway is still open or there are no enteries, a winner can not be decided.");
-        return;
-    }
-    let winnernumber = Math.floor(Math.random() * giveawayentrylist.length);
-    client.say(channelName, "The winner of the giveaway is......");
-    client.say(channelName, `millie4Hype ${giveawayentrylist[winnernumber]} millie4Hype CONGRATULATIONS millie4Hype`)
-}
-
 function hi(target, context, params) {
     let responseNumber = Math.floor(Math.random() * hiresponses.length);
     let response = hiresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
@@ -314,125 +256,15 @@ function newquote(target, context, params) {
     });
 }
 
-function uptime(target, context, params) {
-    let currentTime = new Date();
-    let timeDifference = currentTime.getTime() - startTime.getTime();
-    console.log(timeDifference);
-
-    let hours = Math.floor(timeDifference / (1000 * 60 * 60));
-    let minutes = Math.floor(timeDifference / (1000 * 60)) % 60;
-    let seconds = Math.floor(timeDifference / 1000) % 60;
-
-    let hoursWord = (hours === 1) ? 'hour' : 'hours';
-    let minutesWord = (minutes === 1) ? 'minute' : 'minutes';
-    let secondsWord = (seconds === 1) ? 'second' : 'seconds';
-
-    client.say(channelName, `Millie has been live for ${hours} ${hoursWord}, ${minutes} ${minutesWord} and ${seconds} ${secondsWord}. `);
-
-}
-
-function checkminibux(target, context, params) {
-    db.getCurrency(context.username, function (err, currency) {
-        if (err) {
-            console.log(err);
-        } else {
-            client.say(channelName, `${context.username} you have ${currency} minibux`)
-        }
-    });
-}
-
-function addbux(target, context, params) {
-    if (context.badges["broadcaster"] != 1 || !context.mod) {
-        console.log(`${context.username} does not have permission to use this command`);
-        return;
-    }
-    if (params.length < 2) {
-        console.log("Incorroect parameters.");
-        console.log("EXAMPLE: !addbux usernmae 100");
-        return;
-    }
-    let adduser = params[0].replace('@', '').toLowerCase();
-    let addcurrency = params[1];
-    if (isNaN(addcurrency)) {
-        console.log(`${addcurrency} is not a valid currency value`);
-        return;
-    }
-    db.getCurrency(adduser, function (err, currency) {
-        if (err) {
-            console.log("Unable to find user to add currecy to.");
-            return;
-        }
-        let newcurrency = parseInt(currency) + parseInt(addcurrency);
-        newcurrency = newcurrency < 0 ? 0 : newcurrency;
-        db.changeCurrency(newcurrency, adduser, function (err, msg) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            client.say(channelName, msg);
-        })
-    });
-}
-
-function usercoinbet(target, context, params) {
-    if (params.length < 2) {
-        client.say(channelName, "If you would like to earn bux from a coin flip please type EXAMPLE*!flip heads 50*");
-        return;
-    }
-    let outcomebet = params[0].toLowerCase();
-    let amountbet = params[1];
-    if (outcomebet != "heads" && outcomebet != "tails") {
-        client.say(channelName, `${context.username} ${outcomebet} is not a valid side of a coin. Please type heads or tails.`);
-        return;
-    }
-    if (isNaN(amountbet)) {
-        client.say(channelName, `${context.username} ${amountbet} is not a valid betting amount`);
-        return;
-    }
-    db.getCurrency(context.username, function (err, currency) {
-        if (err) {
-            console.log(err);
-        } else {
-            if (amountbet > currency) {
-                client.say(channelName,`${context.username} you can't bet that amount`)
-            } else {
-                if (!flipcoin(outcomebet)) {
-                    client.say(channelName, `Unlucky ${context.username} you didn't guess correctly, better luck next time. You lose ${amountbet} bux.`);
-                    amountbet = -Math.abs(amountbet);
-                } else {
-                    client.say(channelName, `${context.username} congratulations you guessed right. You win ${amountbet} bux!`)
-                }
-                let newcurrency = parseInt(currency) + parseInt(amountbet);
-                db.changeCurrency(newcurrency, context.username, function (err, msg) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            }
-        }
-    });
-}
-
-function flipcoin(useroutcome) {
-    let coin = Math.floor(Math.random() * 2); //0 is tails 1 is heads
-    let cointext = coin === 1 ? "heads" : "tails";
-    let uoutcome = useroutcome === "heads" ? 1 : 0;
-    client.say(channelName, `The coin has been flipped and come out as....${cointext}`);
-    return uoutcome === coin;
-}
-
-function theSteveProtocol() {
-    //add 7hours to current time and date
-    //print to chat when psyco_steve enters chat
-}
-
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
+    //TODO: Remove
     if (context.subscriber && subwelcome) {
         playSubWelcomeSong(context);
     }
+    //TODO: Remove
     db.checkUser(context.username, function (err) {
         if (err) {
             console.log(err);
@@ -462,20 +294,62 @@ function onMessageHandler(target, context, msg, self) {
     }
 }
 
+function onCheerHandler(channel, userState, message) {
+    //This function is used to handle what happens when users send bits to the channel
+    console.log(`${userState.username} has cheered ${userState.bits}`);
+    milestones.addCheerPoints(parseInt(userState.bits));
+}
+
+function onSubHandler(channel, username, methods, message, userstate) {
+    //This function is used to handle what happens when users sub to the channel
+    let outputMsg = ``;
+    if (methods.prime) {
+        outputMsg = `${userstate.username} has subbed using method PRIME`;
+    } else {
+        outputMsg = `${ userstate.username } has subbed using method ${ methods.plan }`;
+    }
+    console.log(outputMsg);
+    milestones.subCalculation(methods.prime, methods.plan);
+}
+
+function onReSubHandler(channel, username, months, message, userstate, methods) {
+    //This function is used to handle what happens when users resub to the channel
+    let outputMsg = ``;
+    if (methods.prime) {
+        outputMsg = `${userstate.username} has resubbed using method PRIME`;
+    } else {
+        outputMsg = `${userstate.username} has resubbed using method ${methods.plan}`;
+    }
+    console.log(outputMsg);
+    milestones.subCalculation(methods.prime, methods.plan);
+}
+
+function onSubGiftHandler(channel, username, streakMonths, recipient, methods, userstate) {
+    //This function is used to handle what happens when users gift subs to the channel
+    console.log(`${userstate.username} has gifted a sub to ${recipient} using method ${methods.plan}`);
+    milestones.subCalculation(methods.prime, methods.plan);
+}
+
 client.on("message", onMessageHandler);
-client.on("cheer", rickstream.addCheerAmount);
-client.on("subscription", rickstream.subscription);
-client.on("resub", rickstream.reSubscription);
-client.on("subgift", rickstream.subGift);
-client.on("submysterygift", rickstream.subBomb);
 
-let startTime;
+//NEW FUNCTION FOR HANDLEING STREAM EVENTS
+//bits
+client.on("cheer", onCheerHandler);
+//User subs
+client.on("subscription", onSubHandler);
+client.on("resub", onReSubHandler);
+//Gifted subs
+client.on("subgift", onSubGiftHandler);
 
+//This client on function is no longer needed unless points need to
+//be calculated differently based on amount gifted
+//client.on("submysterygift", onSubGiftHandler);
+
+
+//This may be the best place to place start up commands, needs to be explored more
 client.on("connected", function (address, port) {
     console.log("Address: " + address + " Port: " + port);
-    startTime = new Date();
-    console.log(startTime);
-
+    milestones.loadPointValueOnStartUp();
 });
 
 

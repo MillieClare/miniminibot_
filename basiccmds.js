@@ -14,6 +14,7 @@ module.exports = {
     discord,
     newsub,
     subperks,
+    subPlanConverter,
 };
 
 function twitter(target, context, params, client, channelname) {
@@ -94,4 +95,20 @@ function subperks(target, context, params, client, channelname) {
     client.say(channelname, `Special discord role and sub chat (https://discord.gg/E2zvvhn)`);
     client.say(channelname, `Ability to play games with the amazing Milliebug herself`);
     client.say(channelname, `and a special perk if you stay for 3 months: real sub BADGES and emote STICKERS`);
+}
+
+
+//This is a nice to have function it will convert the method string
+//from the onsubhandlers to something more readable for the user
+function subPlanConverter(methodplan) {
+    switch (methodplan) {
+        case '1000':
+            return "TIER 1";
+        case '2000':
+            return "TIER 2";
+        case '3000':
+            return "TIER 3";
+        default:
+            return `Cannot find the plan ${methodplan}`;
+    }
 }

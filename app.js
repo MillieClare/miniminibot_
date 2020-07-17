@@ -54,9 +54,13 @@ let knownCommands = {
     sc,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
-    addPoints: milestones.manualAddPoints,
-    getPoints: milestones.getAmount,
-    reset: milestones.resetMilestones,
+    ///THESE COMMANDS WILL NEED TO BE RE-ENABLED AFTER BIRTHDAY STREAM//////
+    //addPoints: milestones.manualAddPoints,
+    //getPoints: milestones.getAmount,
+    //reset: milestones.resetMilestones,
+    ///END OF NEW MILESTONE COMMANDS///
+    addPoints: rickstream.manualAddPoints,
+    getPoints: rickstream.getAmount,
 };
 
 //TODO: Might be worth spliting this list into Normal commands and Mod commands
@@ -330,20 +334,44 @@ function onSubGiftHandler(channel, username, streakMonths, recipient, methods, u
     milestones.subCalculation(methods.prime, methods.plan);
 }
 
+function onSubBombHandler(channel, username, numOfSubs, methods, userstate) {
+    //This function should only be called if the subs are above 5
+    //May need to look into having this function be turned off and on via config controls
+    if (numOfSubs < 5)
+        return;
+
+    console.log(`${userstate.username} has gifted ${numOfSubs} using method ${methods.plan}`);
+
+}
+
 client.on("message", onMessageHandler);
 
-//NEW FUNCTION FOR HANDLEING STREAM EVENTS
-//bits
-client.on("cheer", onCheerHandler);
-//User subs
-client.on("subscription", onSubHandler);
-client.on("resub", onReSubHandler);
-//Gifted subs
-client.on("subgift", onSubGiftHandler);
+///////THESE FUNCTIONS WILL NEED TO BE RE-ENABLED AFTER BIRTHDAY STREAM/////////
 
-//This client on function is no longer needed unless points need to
-//be calculated differently based on amount gifted
-//client.on("submysterygift", onSubGiftHandler);
+////NEW FUNCTION FOR HANDLEING STREAM EVENTS
+////bits
+//client.on("cheer", onCheerHandler);
+////User subs
+//client.on("subscription", onSubHandler);
+//client.on("resub", onReSubHandler);
+////Gifted subs
+//client.on("subgift", onSubGiftHandler);
+
+////This client on function is no longer needed unless points need to
+////be calculated differently based on amount gifted
+//client.on("submysterygift", onSubBombHandler);
+
+///////END OF NEW MILESTONE FUNCTIONS////////
+
+
+///////OLDRICKSTREAMFUNCTIONS/////////
+
+client.on("cheer", rickstream.addCheerAmount);
+client.on("subscription", rickstream.subscription);
+client.on("resub", rickstream.reSubscription);
+client.on("subgift", rickstream.subGift);
+client.on("submysterygift", rickstream.subBomb);
+///////END OF OLDRICKSTREAMFUNCTIONS////////
 
 
 //This may be the best place to place start up commands, needs to be explored more

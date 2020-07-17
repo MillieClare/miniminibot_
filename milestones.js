@@ -59,16 +59,20 @@ function addCheerPoints(bits) {
 function subCalculation(isPrime, method) {
     if (isPrime) {
         pointTracker += prime;
+        console.log(prime, " number of points have been added");
     } else {
         switch (method) {
             case '1000':
                 pointTracker += tier1;
+                console.log(tier1, " number of points have been added");
                 break;
             case '2000':
                 pointTracker += tier2;
+                console.log(tier2, " number of points have been added");
                 break;
             case '3000':
                 pointTracker += tier3;
+                console.log(tier3, " number of points have been added");
                 break;
             default:
                 console.log('Cannot find the plan.', method);
@@ -76,6 +80,13 @@ function subCalculation(isPrime, method) {
     }
     writeForStream();
 }
+
+//function subBombCalculation(numOfSubs, isPrime, method) {
+//    //5 = 3000 base points + 500 extra bomb points
+//    //the 3000 is handled by subCalculation function
+//    //this function needs to handle the extra 500
+
+//}
 
 function loadPointValueOnStartUp() {
     if(!checkIfPointsAreSavedAlready(`${milestoneFolderPath}currentPoints.txt`)){

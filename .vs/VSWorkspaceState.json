@@ -1,10 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\botinfo",
-    "\\botinfo\\creds",
-    "\\botinfo\\quotes"
+    "\\botinfo"
   ],
-  "SelectedNode": "\\basiccmds.js",
+  "SelectedNode": "\\points.txt",
   "PreviewInSolutionExplorer": false
 }

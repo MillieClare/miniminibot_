@@ -5,7 +5,6 @@ const path = require("path");
 const tmi = require('tmi.js');
 const xml2js = require('xml2js');
 const player = require('play-sound')({ player: "ffplay" }); //decided on ffplay as it is more realiable when playing mp3s
-const db = require("./db.js");
 const bcmd = require("./basiccmds.js");
 const rickstream = require("./rickstream.js");
 const milestones = require("./milestones.js");
@@ -15,21 +14,6 @@ let parser = new xml2js.Parser({ attrkey: "ATTR" });
 //moved bot information to external text file
 const botinfopath = path.join(__dirname, "botinfo");
 let channelName = ""; //this variable can be set in the config xml file
-//these are the sound variables
-const soundspath = path.join(__dirname, "sounds"); //the base location for all sounds
-let soundcooldownseconds = 0; //this variable can be set in the config xml file
-let soundcooldown = new Date(); //set cooldown to date type
-
-let subwelcome = false; //this variable can be set in the config xml file
-let sublist = [];
-
-let giveawayentrylist = [];
-let giveawayopen = false;
-let giveawaysubenteries = 0; //this variable can be set in the config xml file
-let giveawaydefaultenteries = 0; //this variable can be set in the config xml file
-
-let hiresponses = [];
-let howareyouresponses = [];
 
 let knownCommands = {
     twitter: bcmd.twitter,
@@ -41,17 +25,11 @@ let knownCommands = {
     hype: bcmd.hype,
     lurk: bcmd.lurk,
     discord: bcmd.discord,
-    hi,
-    howareyou,
     raid: bcmd.raid,
     raiod: bcmd.raid,
     focus: bcmd.focus,
     pb: bcmd.pb,
     zootr: bcmd.zootr,
-    fanfare,
-    quotes,
-    newquote,
-    sc,
     newsub: bcmd.newsub,
     subperks: bcmd.subperks,
     addPoints: milestones.manualAddPoints,
@@ -89,10 +67,6 @@ function playSound(filename) {
 
 //moved settings to xml file, new function should contruct options for tmi
 function getConfigSettings() {
-    if (!db.dbCheck) {
-        console.log("Unable to connected to database");
-        process.exit();
-    }
 
 
     let filename = path.join(botinfopath, "creds", "config.xml");
@@ -106,29 +80,6 @@ function getConfigSettings() {
     giveawaydefaultenteries = (isNaN(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]) ? 1 : parseInt(xmlfile["config"]["bot"][0]["settings"][0]["giveawaydefaultenteries"][0]));
     channelName = xmlfile["config"]["bot"][0]["info"][0]["channelname"][0];
     //end of global settings
-    //db data
-    db.getSublist(function (err, data) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        sublist = data;
-    });
-    db.getResponses("hi",function (err, data) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        hiresponses = data;
-    });
-    db.getResponses("howareyou", function (err, data) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        howareyouresponses = data;
-    });
-    //end of db data
 
     let options = {
         options: {
@@ -147,129 +98,10 @@ function getConfigSettings() {
     return options;
 }
 
-function playSubWelcomeSong(context) {
-    let filepath = path.join(soundspath, "subwelcome");
-    //check if in sublist
-    if (context.username in sublist) {
-        if (sublist[context.username]["welcomed"]) { return; }
-        filepath = path.join(filepath,sublist[context.username]["welcomesong"]);
-        sublist[context.username]["welcomed"] = true;
-        playSound(filepath);
-        return;
-    }
-    //if not in sub list play default and add to sub list
-    filepath = path.join(filepath, "default.mp3");
-    sublist[context.username] = {
-        welcomesong: "default.mp3",
-        welcomed: true,
-    };
-    playSound(filepath);
-}
-
-function soundsCoolDownCheck() {
-    /// <summary> Checks whether the cooldown for sounds has expired, this will stop sound spam. </summary>
-    /// <returns type="Bool"> On cooldown or not </returns>
-    let currentTime = new Date();
-    if (currentTime.getTime() < soundcooldown.getTime()) {
-        console.log("sounds are currently on cooldown");
-        return false;
-    }
-    else {
-        return true;
-    }
-}
-
-function fanfare(target, context, params) {
-    //first check whether sounds are off cooldown
-    if (!soundsCoolDownCheck()) { return; }
-    //Get folder location of farfare files
-    let fanfarepath = path.join(soundspath, "fanfare");
-    //display what file is being requested
-    category = params.join(' ').toLowerCase();
-    db.getFanfares("fanfare", category, "", function (err, data) {
-        if (err) {
-            category === "" ? console.error("No fanfare was found") : console.error(`No fanfare found with category (${category})`);
-            return;
-        } else {
-            let fanfarekey = Math.floor(Math.random() * data.length);
-            let songfile = data[fanfarekey]["filename"];
-            console.log(`Playing: ${songfile}`);
-            playSound(path.join(fanfarepath, songfile));
-            soundcooldown = new Date();
-            soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
-        }
-    });
-}
-//sound clip command example !sc holdit
-function sc(target, context, params) {
-    if (params.length < 1) {
-        console.log("No sound clip file has been entered");
-        return;
-    }
-    if (!soundsCoolDownCheck()) { return; }
-    let scpath = path.join(soundspath, "soundclip");
-    let soundname = params.join(' ').toLowerCase();
-    db.getFanfares("clip", "", soundname, function (err, data) {
-        if (err) {
-            soundname === "" ? console.error("No sound clip was found") : console.error(`No sound clip found with name (${soundname})`);
-            return;
-        } else {
-            let soundkey = Math.floor(Math.random() * data.length);
-            let songfile = data[soundkey]["filename"];
-            console.log(`Playing: ${songfile}`);
-            playSound(path.join(scpath, songfile));
-            soundcooldown = new Date();
-            soundcooldown.setSeconds(soundcooldown.getSeconds() + soundcooldownseconds);
-        }
-    });
-}
-
-function hi(target, context, params) {
-    let responseNumber = Math.floor(Math.random() * hiresponses.length);
-    let response = hiresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
-    client.say(channelName, response);
-}
-
-function howareyou(target, context, params) {
-    let responseNumber = Math.floor(Math.random() * howareyouresponses.length);
-    let response = howareyouresponses[responseNumber].replace("#USERNAME#", context.username).replace("#CHANNEL#", channelName);
-    client.say(channelName, response);
-}
-
-function quotes(target, context, params) {
-    db.getResponses("quote", function (err, data) {
-        if (err || !data) {
-            console.log("No quotes were found");
-            return;
-        } else {
-            let quoteNumber = Math.floor(Math.random() * data.length);
-            client.say(channelName, data[quoteNumber]);
-        }
-    });
-}
-
-function newquote(target, context, params) {
-    let quote = params.join(' ').replace(/['"]+/g,'\"\"');
-    let username = context.username;
-    db.addQuote(quote, username, function (msg) {
-        client.say(channelName, msg);
-    });
-}
-
 function onMessageHandler(target, context, msg, self) {
     if (self) {
         return;
     }
-    //TODO: Remove
-    if (context.subscriber && subwelcome) {
-        playSubWelcomeSong(context);
-    }
-    //TODO: Remove
-    db.checkUser(context.username, function (err) {
-        if (err) {
-            console.log(err);
-        }
-    });
     if (msg.charAt(0) !== commandPrefix) {
         console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`);
         return;

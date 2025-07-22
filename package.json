@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/MillieClare/miniminibot_#readme",
   "dependencies": {
-    "tmi.js": "^1.2.1"
+    "tmi.js": "^1.8.5"
   }
 }
